@@ -107,6 +107,22 @@ import { PocketBase } from 'pocketbase'
 // PB SDK 的 options.fetch / authStore / realtime 三处接入点详见 pb-sdk 仓库(规划中)
 ```
 
+### 消费方须知:页面模块作用域的裸标识符不可靠(2026-10-03 DevTools Skyline 实测)
+
+小程序页面模块跑在 `with(白名单代理)` 式受限作用域:裸标识符只解析
+「JS/Web 内建 + wx」白名单,**不透传运行期装到 globalThis 上的属性**:
+
+- 裸 `AbortController` / `TextDecoder` / `FormData` / `File` / `Blob`:✅(内建自带);
+- 裸 `fetch` / `EventSource` / `URL`:❌ 解析到 undefined(V8 报 "not a function"),
+  无论安装发生在 app 启动还是本页 onLoad;
+- `globalThis.x` 显式访问:✅ 永远可靠(装了就能用);evaluate / 自动化注入
+  的代码运行在真全局上下文,裸写也可见。
+
+因此:页面代码消费本家族全局**一律 `globalThis.x` 或直接模块 import**;
+第三方库内部的裸全局依赖(如 PocketBase SDK 的 `AbortController`,恰好属
+内建白名单)接入前逐个实证 —— pb-sdk 的注入策略(fetch 经 beforeSend 短路
+裸求值)即据此设计。探针页的 `bare-fetch-visible` 检查是该语义的常驻哨兵。
+
 ## 小程序真机差异 checklist(实现与测试时对照)
 
 - `wx.request` 默认 `timeout` 60s:长连接(EventSource / SSE 流)必须显式调大;
