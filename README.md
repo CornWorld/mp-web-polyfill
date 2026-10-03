@@ -9,18 +9,18 @@
 
 ## 包矩阵
 
-| 包                             | 覆盖                                                                                            | 规约引擎(依赖)                                                                                                                                                    | 手写部分(wx 桥)                                                  |
-| ------------------------------ | ----------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| `@cornworld/mp-core`           | 运行时检测、AbortError、字节工具                                                                | —                                                                                                                                                                 | `WxLike` 最小接口(全家族唯一 seam)                               |
-| `@cornworld/mp-text-encoding`  | `TextEncoder` / `TextDecoder`(UTF-8,流式)                                                       | —(现有实现要么失修要么含全部遗留编码太重,故自写)                                                                                                                  | WHATWG utf-8 编解码状态机                                        |
-| `@cornworld/mp-url`            | `URL` / `URLSearchParams` / `canParse` / `parse`                                                | `whatwg-url` **纯状态机深路径**(`lib/url-state-machine` + `lib/urlencoded`;主入口 webidl2js 包装层运行时需 eval,小程序逻辑层没有,不可用——2026-10-03 真机实测修复) | 薄包装 + canParse/parse 增补、URLSearchParams 规范类(纯函数引擎) |
-| `@cornworld/mp-fetch`          | `fetch` / `Request` / `Response` / `Headers` / `AbortController` / `Blob` / `File` / `FormData` | 流式:`web-streams-polyfill`(peer,可注入)                                                                                                                          | `wx.request` 传输桥、multipart 序列化、Abort 实现                |
-| `@cornworld/mp-eventsource`    | `EventSource`(SSE)                                                                              | `eventsource-parser`(线格式解析)                                                                                                                                  | `wx.request enableChunked` 传输、重连状态机、MIME 门控           |
-| `@cornworld/mp-storage`        | `localStorage`                                                                                  | —                                                                                                                                                                 | `wx.setStorageSync` 桥、配额错误映射                             |
-| `@cornworld/mp-web-runtime`    | 一站式 API 级安装器                                                                             | `web-streams-polyfill`                                                                                                                                            | 冲突检测 / 标记 / 诊断                                           |
-| `@cornworld/wx-mock`(internal) | 测试专用模拟宿主                                                                                | —                                                                                                                                                                 | Node http 版 `wx.request` / storage                              |
+| 包                              | 覆盖                                                                                            | 规约引擎(依赖)                                                                                                                                                    | 手写部分(wx 桥)                                                  |
+| ------------------------------- | ----------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `mp-web-polyfill/core`          | 运行时检测、AbortError、字节工具                                                                | —                                                                                                                                                                 | `WxLike` 最小接口(全家族唯一 seam)                               |
+| `mp-web-polyfill/text-encoding` | `TextEncoder` / `TextDecoder`(UTF-8,流式)                                                       | —(现有实现要么失修要么含全部遗留编码太重,故自写)                                                                                                                  | WHATWG utf-8 编解码状态机                                        |
+| `mp-web-polyfill/url`           | `URL` / `URLSearchParams` / `canParse` / `parse`                                                | `whatwg-url` **纯状态机深路径**(`lib/url-state-machine` + `lib/urlencoded`;主入口 webidl2js 包装层运行时需 eval,小程序逻辑层没有,不可用——2026-10-03 真机实测修复) | 薄包装 + canParse/parse 增补、URLSearchParams 规范类(纯函数引擎) |
+| `mp-web-polyfill/fetch`         | `fetch` / `Request` / `Response` / `Headers` / `AbortController` / `Blob` / `File` / `FormData` | 流式:`web-streams-polyfill`(随包依赖,可注入降级)                                                                                                                  | `wx.request` 传输桥、multipart 序列化、Abort 实现                |
+| `mp-web-polyfill/eventsource`   | `EventSource`(SSE)                                                                              | `eventsource-parser`(线格式解析)                                                                                                                                  | `wx.request enableChunked` 传输、重连状态机、MIME 门控           |
+| `mp-web-polyfill/storage`       | `localStorage`                                                                                  | —                                                                                                                                                                 | `wx.setStorageSync` 桥、配额错误映射                             |
+| `mp-web-polyfill/installer`     | 一站式 API 级安装器(原 mp-web-runtime)                                                          | `web-streams-polyfill`                                                                                                                                            | 冲突检测 / 标记 / 诊断                                           |
+| `@cornworld/wx-mock`(internal)  | 测试专用模拟宿主                                                                                | —                                                                                                                                                                 | Node http 版 `wx.request` / storage                              |
 
-> npm scope `@cornworld` 为占位:首次发布前替换为你的 npm org 即可(全局替换包名 + `.changeset/config.json`)。
+> 包名 `mp-web-polyfill`(无 scope,npm 已验空闲;`mp-polyfill` 曾被 unpublish 不可注册)。单包多出口:上表每行是一个子路径,同版本线整体演进;internal 的 `@cornworld/wx-mock` 不发布。
 
 ## 测试边界(本仓库的宪法)
 
@@ -87,7 +87,7 @@ UPDATE_URL_BASELINE=1 pnpm vitest run packages/mp-url
 5. 安装 `ReadableStream` 后自动接通 fetch 流式通道。
 
 ```ts
-import { installWebRuntimeGlobals, listGlobalsStatus } from '@cornworld/mp-web-runtime'
+import { installWebRuntimeGlobals, listGlobalsStatus } from 'mp-web-polyfill/installer'
 
 const report = installWebRuntimeGlobals() // 全量,冲突安全
 // installWebRuntimeGlobals({ targets: ['fetch', 'EventSource'] })  // API 级粒度
@@ -99,9 +99,9 @@ console.log(listGlobalsStatus()) // [{ name, source: 'ours' | 'host' | 'absent' 
 也可以不用安装器,直接包级引入(PocketBase SDK 场景推荐):
 
 ```ts
-import { fetch, FormData, Blob } from '@cornworld/mp-fetch'
-import { localStorage } from '@cornworld/mp-storage'
-import { EventSource } from '@cornworld/mp-eventsource'
+import { fetch, FormData, Blob } from 'mp-web-polyfill/fetch'
+import { localStorage } from 'mp-web-polyfill/storage'
+import { EventSource } from 'mp-web-polyfill/eventsource'
 import { PocketBase } from 'pocketbase'
 
 // PB SDK 的 options.fetch / authStore / realtime 三处接入点详见 pb-sdk 仓库(规划中)

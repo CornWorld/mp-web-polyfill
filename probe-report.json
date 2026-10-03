@@ -1,0 +1,91 @@
+{
+  "generatedAt": "2026-10-03T14:18:34.266Z",
+  "page": "pages/probe/probe",
+  "origin": "http://127.0.0.1:50786",
+  "static": {
+    "report": {
+      "installed": [
+        "pb-param",
+        "web-runtime 安装",
+        "PB /api/health",
+        "PB getList(notes)",
+        "PB realtime 握手"
+      ]
+    },
+    "checks": [
+      {
+        "name": "pb-param",
+        "ok": true,
+        "detail": "(none)"
+      },
+      {
+        "name": "web-runtime 安装",
+        "ok": true,
+        "detail": "installed=FormData|Blob|File|fetch|ReadableStream|EventSource skipped=3"
+      },
+      {
+        "name": "PB /api/health",
+        "ok": true,
+        "detail": "{\"message\":\"API is healthy.\",\"code\":200,\"data\":{}}"
+      },
+      {
+        "name": "PB getList(notes)",
+        "ok": true,
+        "detail": "totalItems=2"
+      },
+      {
+        "name": "PB realtime 握手",
+        "ok": true,
+        "detail": "state=open"
+      }
+    ]
+  },
+  "live": {
+    "checks": [
+      {
+        "name": "fetch-json-live",
+        "ok": true,
+        "detail": "status=200"
+      },
+      {
+        "name": "fetch-chunked-live",
+        "ok": true,
+        "detail": "retry: 100\n\ndata: 你好\n\nid: 7\ndata: sse\n\n"
+      },
+      {
+        "name": "fetch-utf8-reassembly-live",
+        "ok": true,
+        "detail": "\"小码\""
+      },
+      {
+        "name": "eventsource-live",
+        "ok": true,
+        "detail": "你好,sse"
+      }
+    ]
+  },
+  "hijack": {
+    "checks": [
+      {
+        "name": "fetch-utf8-split-hijack",
+        "ok": true,
+        "detail": "\"你好\""
+      },
+      {
+        "name": "fetch-abort-midstream-hijack",
+        "ok": true,
+        "detail": "name=AbortError"
+      },
+      {
+        "name": "fetch-http-error-hijack",
+        "ok": true,
+        "detail": "status=500 text=\"\""
+      },
+      {
+        "name": "eventsource-split-hijack",
+        "ok": true,
+        "detail": "messages=你好,sse lastEventId=7"
+      }
+    ]
+  }
+}

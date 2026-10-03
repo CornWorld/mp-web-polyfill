@@ -16,7 +16,7 @@ import type {
   WxStorageSync,
   WxUploadFileOptions,
   WxUploadFileTask,
-} from '@cornworld/mp-core'
+} from '../../../packages/mp-web-polyfill/src/core'
 
 export interface CapturedRequest {
   url: string

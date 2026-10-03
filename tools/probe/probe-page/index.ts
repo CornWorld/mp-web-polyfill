@@ -3,10 +3,10 @@
 // miniprogram-automator 的 evaluate() 拉取结果。
 //
 // 工程需引入:
-//   pnpm add @cornworld/mp-web-runtime
+//   pnpm add mp-web-polyfill
 // 并在 app.json 依赖 npm 构建(weapp-vite 原生支持 node_modules 打包)。
 
-import { installWebRuntimeGlobals } from '@cornworld/mp-web-runtime'
+import { installWebRuntimeGlobals } from 'mp-web-polyfill/installer'
 
 Page({
   data: {

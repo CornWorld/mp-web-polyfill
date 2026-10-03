@@ -14,13 +14,5 @@
     "useDefineForClassFields": true
   },
   "files": [],
-  "references": [
-    { "path": "packages/mp-core" },
-    { "path": "packages/mp-text-encoding" },
-    { "path": "packages/mp-url" },
-    { "path": "packages/mp-fetch" },
-    { "path": "packages/mp-eventsource" },
-    { "path": "packages/mp-storage" },
-    { "path": "packages/mp-web-runtime" }
-  ]
+  "references": [{ "path": "packages/mp-web-polyfill" }]
 }

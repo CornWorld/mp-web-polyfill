@@ -47,75 +47,14 @@ importers:
 
   internal/wx-mock: {}
 
-  packages/mp-core:
-    devDependencies:
-      tsup:
-        specifier: ^8.5.0
-        version: 8.5.1(postcss@8.5.28)(typescript@5.9.3)
-
-  packages/mp-eventsource:
+  packages/mp-web-polyfill:
     dependencies:
-      '@cornworld/mp-core':
-        specifier: workspace:*
-        version: link:../mp-core
-      '@cornworld/mp-text-encoding':
-        specifier: workspace:*
-        version: link:../mp-text-encoding
-      '@cornworld/mp-url':
-        specifier: workspace:*
-        version: link:../mp-url
       eventsource-parser:
         specifier: ^4.1.1
         version: 4.1.1
-    devDependencies:
-      tsup:
-        specifier: ^8.5.0
-        version: 8.5.1(postcss@8.5.28)(typescript@5.9.3)
-
-  packages/mp-fetch:
-    dependencies:
-      '@cornworld/mp-core':
-        specifier: workspace:*
-        version: link:../mp-core
-      '@cornworld/mp-text-encoding':
-        specifier: workspace:*
-        version: link:../mp-text-encoding
-      '@cornworld/mp-url':
-        specifier: workspace:*
-        version: link:../mp-url
-    devDependencies:
-      tsup:
-        specifier: ^8.5.0
-        version: 8.5.1(postcss@8.5.28)(typescript@5.9.3)
       web-streams-polyfill:
         specifier: ^4.1.0
         version: 4.3.0
-
-  packages/mp-storage:
-    dependencies:
-      '@cornworld/mp-core':
-        specifier: workspace:*
-        version: link:../mp-core
-    devDependencies:
-      tsup:
-        specifier: ^8.5.0
-        version: 8.5.1(postcss@8.5.28)(typescript@5.9.3)
-
-  packages/mp-text-encoding:
-    dependencies:
-      '@cornworld/mp-core':
-        specifier: workspace:*
-        version: link:../mp-core
-    devDependencies:
-      tsup:
-        specifier: ^8.5.0
-        version: 8.5.1(postcss@8.5.28)(typescript@5.9.3)
-
-  packages/mp-url:
-    dependencies:
-      '@cornworld/mp-core':
-        specifier: workspace:*
-        version: link:../mp-core
       whatwg-url:
         specifier: ^14.2.0
         version: 14.2.0
@@ -123,34 +62,6 @@ importers:
       '@types/whatwg-url':
         specifier: ^13.0.0
         version: 13.0.0
-      tsup:
-        specifier: ^8.5.0
-        version: 8.5.1(postcss@8.5.28)(typescript@5.9.3)
-
-  packages/mp-web-runtime:
-    dependencies:
-      '@cornworld/mp-core':
-        specifier: workspace:*
-        version: link:../mp-core
-      '@cornworld/mp-eventsource':
-        specifier: workspace:*
-        version: link:../mp-eventsource
-      '@cornworld/mp-fetch':
-        specifier: workspace:*
-        version: link:../mp-fetch
-      '@cornworld/mp-storage':
-        specifier: workspace:*
-        version: link:../mp-storage
-      '@cornworld/mp-text-encoding':
-        specifier: workspace:*
-        version: link:../mp-text-encoding
-      '@cornworld/mp-url':
-        specifier: workspace:*
-        version: link:../mp-url
-      web-streams-polyfill:
-        specifier: ^4.1.0
-        version: 4.3.0
-    devDependencies:
       tsup:
         specifier: ^8.5.0
         version: 8.5.1(postcss@8.5.28)(typescript@5.9.3)

@@ -1,0 +1,76 @@
+{
+  "name": "mp-web-polyfill",
+  "version": "0.1.0",
+  "description": "微信小程序逻辑层 Web API polyfill 家族:URL / TextEncoder / TextDecoder / localStorage / fetch 家族 / EventSource,附一站式全局安装器(installer 子路径)",
+  "type": "module",
+  "exports": {
+    "./core": {
+      "types": "./dist/core/index.d.ts",
+      "import": "./dist/core.js",
+      "require": "./dist/core.cjs"
+    },
+    "./text-encoding": {
+      "types": "./dist/text-encoding/index.d.ts",
+      "import": "./dist/text-encoding.js",
+      "require": "./dist/text-encoding.cjs"
+    },
+    "./url": {
+      "types": "./dist/url/index.d.ts",
+      "import": "./dist/url.js",
+      "require": "./dist/url.cjs"
+    },
+    "./storage": {
+      "types": "./dist/storage/index.d.ts",
+      "import": "./dist/storage.js",
+      "require": "./dist/storage.cjs"
+    },
+    "./fetch": {
+      "types": "./dist/fetch/index.d.ts",
+      "import": "./dist/fetch.js",
+      "require": "./dist/fetch.cjs"
+    },
+    "./fetch/abort": {
+      "types": "./dist/fetch/abort.d.ts",
+      "import": "./dist/fetch/abort.js",
+      "require": "./dist/fetch/abort.cjs"
+    },
+    "./fetch/form-data": {
+      "types": "./dist/fetch/form-data.d.ts",
+      "import": "./dist/fetch/form-data.js",
+      "require": "./dist/fetch/form-data.cjs"
+    },
+    "./fetch/streams": {
+      "types": "./dist/fetch/streams.d.ts",
+      "import": "./dist/fetch/streams.js",
+      "require": "./dist/fetch/streams.cjs"
+    },
+    "./eventsource": {
+      "types": "./dist/eventsource/index.d.ts",
+      "import": "./dist/eventsource.js",
+      "require": "./dist/eventsource.cjs"
+    },
+    "./installer": {
+      "types": "./dist/installer/index.d.ts",
+      "import": "./dist/installer.js",
+      "require": "./dist/installer.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "dependencies": {
+    "eventsource-parser": "^4.1.1",
+    "web-streams-polyfill": "^4.1.0",
+    "whatwg-url": "^14.2.0"
+  },
+  "devDependencies": {
+    "@types/whatwg-url": "^13.0.0",
+    "tsup": "^8.5.0"
+  },
+  "scripts": {
+    "build": "tsup && tsc -b --force"
+  },
+  "license": "MIT"
+}
