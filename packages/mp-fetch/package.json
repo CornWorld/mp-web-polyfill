@@ -29,7 +29,9 @@
     },
     "./package.json": "./package.json"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "sideEffects": false,
   "dependencies": {
     "@cornworld/mp-core": "workspace:*",
@@ -45,7 +47,7 @@
     }
   },
   "scripts": {
-    "build": "tsup src/index.ts src/abort.ts src/form-data.ts src/streams.ts --format esm,cjs --target es2020 --clean --sourcemap"
+    "build": "tsup src/index.ts src/abort.ts src/form-data.ts src/streams.ts --format esm,cjs --target es2020 --clean --sourcemap && tsc -b --force"
   },
   "devDependencies": {
     "tsup": "^8.5.0",

@@ -14,14 +14,16 @@
     },
     "./package.json": "./package.json"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "sideEffects": false,
   "dependencies": {
     "@cornworld/mp-core": "workspace:*",
     "whatwg-url": "^14.2.0"
   },
   "scripts": {
-    "build": "tsup src/index.ts --format esm,cjs --target es2020 --clean --sourcemap"
+    "build": "tsup src/index.ts --format esm,cjs --target es2020 --clean --sourcemap && tsc -b --force"
   },
   "devDependencies": {
     "@types/whatwg-url": "^13.0.0",

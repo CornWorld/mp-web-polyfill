@@ -14,7 +14,9 @@
     },
     "./package.json": "./package.json"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "sideEffects": false,
   "dependencies": {
     "@cornworld/mp-core": "workspace:*",
@@ -23,7 +25,7 @@
     "eventsource-parser": "^4.1.1"
   },
   "scripts": {
-    "build": "tsup src/index.ts --format esm,cjs --target es2020 --clean --sourcemap"
+    "build": "tsup src/index.ts --format esm,cjs --target es2020 --clean --sourcemap && tsc -b --force"
   },
   "devDependencies": {
     "tsup": "^8.5.0"
