@@ -1,0 +1,31 @@
+{
+  "name": "@cornworld/mp-url",
+  "version": "0.1.0",
+  "description": "URL / URLSearchParams 小程序 polyfill(WHATWG URL 解析子集:special schemes http/https/ws/wss,WPT urltests 验收)",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": ["dist"],
+  "sideEffects": false,
+  "dependencies": {
+    "@cornworld/mp-core": "workspace:*",
+    "whatwg-url": "^14.2.0"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --target es2020 --clean --sourcemap"
+  },
+  "devDependencies": {
+    "@types/whatwg-url": "^13.0.0",
+    "tsup": "^8.5.0"
+  },
+  "license": "MIT"
+}
