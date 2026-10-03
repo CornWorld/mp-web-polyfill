@@ -1,0 +1,12 @@
+{
+  "name": "@cornworld/wx-mock",
+  "version": "0.1.0",
+  "private": true,
+  "description": "测试专用:基于 Node http 的 wx.request / wx storage 模拟宿主(chunked、失败注入、配额模拟)",
+  "type": "module",
+  "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "license": "MIT"
+}
