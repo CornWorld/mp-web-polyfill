@@ -1,29 +1,52 @@
 name: Probe(小程序真机/DevTools 一致性探针)
 
-# C 层验收:同一份 fixture 语义在真实小程序运行时(逻辑层 JSCore/V8)里复跑。
-# 与 CI 的关系:PR 不跑本 workflow(DevTools 需要扫码登录态),按 schedule / 手动 /
-# 被其他仓库 workflow_call 调用。推荐挂在 self-hosted 的 Mac runner 上,
-# 微信开发者工具登录态持久化后无需人工干预(过期需重新扫码一次)。
-# 说明:官方 minium(Python)与 miniprogram-automator(JS)驱动的是同一个
-# DevTools 自动化端口;本仓库是 JS monorepo,选 automator 以复用工具链,
-# mock 能力(automator.mockWxMethod)留给业务层桩,桥接探针走真实传输。
+# C 层验收:同一份 fixture 语义在真实小程序运行时(官方 AppService)里复跑。
+# PR 不在 GitHub 托管 runner 上跑(DevTools 需要扫码登录态),本 workflow
+# 挂在常驻登录态的 self-hosted Mac runner 上;官方 minium(Python)与
+# miniprogram-automator(JS)驱动同一 DevTools 自动化端口,本仓库选 automator
+# 复用工具链;mock 能力(mockWxMethod 结果替换语义)留给业务层桩,传输验证
+# 走真实网络与 evaluate 函数体接管(见 tools/probe/run.mjs 的 hijack 检查)。
 #
-# schedule 触发时没有 inputs:runner 需配置环境变量 PROBE_PROJECT(小程序工程
-# 绝对路径)与可选 PROBE_PAGE(探针页路径);两者皆缺时本 workflow 中性跳过
-# (默认探本仓库自身没有 project.config.json,直接跑必然失败)。
+# 触发形态:
+# - workflow_call:被业务仓库(宿主小程序工程)调用 —— 探针跑在
+#   「polyfill@main + 调用方指定 ref」组合上,是业务仓库 push/PR 的真环境门禁;
+# - workflow_dispatch / schedule:runner 侧配置 PROBE_PROJECT(+ 可选
+#   PROBE_PAGE)环境变量指向本地小程序工程绝对路径,两者皆缺时中性跳过。
+#
+# checkout 布局刻意复刻 jgst 的 link: 相对路径(miniapp/package.json 的
+# link:../../cornworld-miniprogram-polyfill):
+#   $WORKSPACE/cornworld-miniprogram-polyfill   ← 本仓库(或 workflow_call 调用方指定的 ref)
+#   $WORKSPACE/<project-repository>/miniapp     ← 宿主工程
+# 真机接入位:检查全部经探针页契约(__mpProbeRun)与 evaluate 注入执行,
+# 控制通道与页面解耦 —— 换真机通道(minium 真机调试)时 runner 适配层替换,
+# 检查体零改动。
 
 on:
   workflow_call:
     inputs:
-      project-path:
-        description: 包含探针页的小程序工程路径(通常是调用方仓库)
+      project-repository:
+        description: 宿主小程序仓库 slug(owner/repo,需本 runner 可读)
         required: false
         type: string
+      project-ref:
+        description: 宿主仓库 checkout ref(调用方传 PR head 或分支)
+        required: false
+        type: string
+      project-subdir:
+        description: 小程序工程在宿主仓库内的子目录(含 project.config.json)
+        required: false
+        type: string
+        default: miniapp
       probe-page:
         description: 探针页路径
         required: false
         type: string
-        default: pages/probe/index
+        default: pages/probe/probe
+      ws-port:
+        description: CI 专用自动化端口(与本地常驻实例 9420 隔离)
+        required: false
+        type: string
+        default: '9421'
       runs-on:
         description: runner 标签(需已安装微信开发者工具并登录)
         required: false
@@ -36,52 +59,102 @@ on:
         default: /Applications/wechatwebdevtools.app/Contents/MacOS/cli
   workflow_dispatch:
     inputs:
-      project-path:
-        description: 包含探针页的小程序工程路径
+      project-repository:
+        description: 宿主小程序仓库 slug(留空则回退 runner 环境变量 PROBE_PROJECT)
         required: false
         type: string
-      probe-page:
-        description: 探针页路径
+      project-ref:
+        description: 宿主仓库 checkout ref
         required: false
         type: string
-        default: pages/probe/index
+        default: main
   schedule:
     - cron: '0 21 * * *' # 每日 05:00(UTC+8)冒烟,捕捉基础库/引擎行为漂移
 
 jobs:
   probe:
     runs-on: ${{ inputs.runs-on || 'self-hosted' }}
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - name: 解析宿主工程来源(仓库 or runner 本地路径)
+        id: src
+        run: |
+          repo="${{ inputs.project-repository }}"
+          if [ -z "$repo" ] && [ -n "$PROBE_PROJECT" ]; then
+            echo "mode=local" >> "$GITHUB_OUTPUT"
+            echo "path=$PROBE_PROJECT" >> "$GITHUB_OUTPUT"
+          elif [ -n "$repo" ]; then
+            echo "mode=repo" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::未配置 inputs.project-repository 或 runner 环境变量 PROBE_PROJECT,跳过"
+            echo "mode=skip" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 'Checkout 本仓库(布局对齐 link: 相对路径)'
+        if: steps.src.outputs.mode != 'skip'
+        uses: actions/checkout@v4
+        with:
+          path: cornworld-miniprogram-polyfill
+
+      - name: Checkout 宿主仓库
+        if: steps.src.outputs.mode == 'repo'
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.project-repository }}
+          ref: ${{ inputs.project-ref || 'main' }}
+          path: host
 
       - uses: pnpm/action-setup@v4
+        if: steps.src.outputs.mode != 'skip'
 
       - uses: actions/setup-node@v4
+        if: steps.src.outputs.mode != 'skip'
         with:
-          node-version-file: .nvmrc
+          node-version-file: cornworld-miniprogram-polyfill/.nvmrc
           cache: pnpm
+          cache-dependency-path: cornworld-miniprogram-polyfill/pnpm-lock.yaml
 
-      - name: 安装依赖并构建
+      - name: 安装依赖并构建 polyfill(PR/指定 ref 代码)
+        if: steps.src.outputs.mode != 'skip'
         run: |
+          cd cornworld-miniprogram-polyfill
           pnpm install --frozen-lockfile
           pnpm build
 
-      - name: 运行探针(DevTools 自动化)
+      - name: 构建宿主小程序工程
+        if: steps.src.outputs.mode != 'skip'
         run: |
-          if [ -z "${{ inputs.project-path }}" ] && [ -z "$PROBE_PROJECT" ]; then
-            echo "::notice::未配置 inputs.project-path 或 runner 环境变量 PROBE_PROJECT,跳过(schedule 需在 runner 侧配置)"
-            exit 0
+          if [ "${{ steps.src.outputs.mode }}" = "repo" ]; then
+            cd "host/${{ inputs.project-subdir || 'miniapp' }}"
+          else
+            cd "${{ steps.src.outputs.path }}"
           fi
-          node tools/probe/run.mjs \
-            --project "${{ inputs.project-path || env.PROBE_PROJECT || github.workspace }}" \
-            --page "${{ inputs.probe-page || env.PROBE_PAGE || 'pages/probe/index' }}" \
-            --cli "${{ inputs.cli-path || '/Applications/wechatwebdevtools.app/Contents/MacOS/cli' }}" \
-            --report probe-report.json
+          corepack enable
+          pnpm install --frozen-lockfile
+          pnpm build
+          # 注意:DevTools npm 构建(miniprogram_npm)不做在这里 —— DevTools 是
+          # 单实例架构,先 build-npm 后 launch 会因实例占用服务端口而失败;
+          # 由探针 runner 在会话建立后经 --build-npm 路由进常驻实例执行。
 
+      - name: 运行探针(专用自动化端口,disconnect 保留实例供下次复用)
+        if: steps.src.outputs.mode != 'skip'
+        run: |
+          if [ "${{ steps.src.outputs.mode }}" = "repo" ]; then
+            project="$GITHUB_WORKSPACE/host/${{ inputs.project-subdir || 'miniapp' }}"
+          else
+            project="${{ steps.src.outputs.path }}"
+          fi
+          cd cornworld-miniprogram-polyfill
+          node tools/probe/run.mjs \
+            --project "$project" \
+            --page "${{ inputs.probe-page || env.PROBE_PAGE || 'pages/probe/probe' }}" \
+            --ws "${{ inputs.ws-port || '9421' }}" \
+            --cli "${{ inputs.cli-path || '/Applications/wechatwebdevtools.app/Contents/MacOS/cli' }}" \
+            --build-npm \
+            --report probe-report.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: probe-report
-          path: probe-report.json
+          path: cornworld-miniprogram-polyfill/probe-report.json
           if-no-files-found: warn

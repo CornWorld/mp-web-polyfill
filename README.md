@@ -131,7 +131,10 @@ node tools/probe/run.mjs --project <小程序工程路径> --page pages/probe/pr
 
 - 驱动:微信开发者工具自动化端口;本仓库用 `miniprogram-automator`(JS,与工具链同源),官方 `minium`(Python)驱动同一端口。**mock 语义勘误(2026-10-03 核对官方文档)**:两者的官方 mock(`mockWxMethod` / `mock_wx_method`)都是「结果替换」,没有函数体形式;真正的「函数体接管」原语是 `evaluate()` 向 AppService 注入代码——automator 与 minium 同源具备,无需为此引入 Python 工具链;
 - 检查项三组:静态(安装器冒烟)+ live 真传输(本机 http 服务,DevTools 关闭域名校验直连 127.0.0.1)+ **hijack 确定性罐头**(evaluate 接管 `wx.request`,复放真 HTTP 无法稳定构造的时序:字节级 chunk 截断 / mid-stream abort / 非 2xx 空 body / SSE 跨 chunk 断字);
-- **会话形态(零弹窗)**:runner 优先 `automator.connect` 到常驻实例(默认 `ws://127.0.0.1:9420`,`--ws` 可改),连不上才 `launch`;结束默认 `disconnect` 保留实例,`--close` 才关闭。反复 launch/close 才是弹窗元凶;Docker 跑 DevTools 不可行(官方无 Linux 版,非官方 wine 移植脆弱),常驻实例 + connect 即官方推荐形态;
+- **会话形态(零弹窗)**:runner 优先 `automator.connect` 到常驻实例(默认 `ws://127.0.0.1:9420`,`--ws` 可改),连不上才 `launch`(端口可指定);结束默认 `disconnect` 保留实例,`--close` 才关闭。反复 launch/close 才是弹窗元凶;Docker 跑 DevTools 不可行(官方无 Linux 版,非官方 wine 移植脆弱),常驻实例 + connect 即官方推荐形态;
+- **DevTools 单实例架构**:`cli build-npm` 会路由进已运行实例 —— npm 构建必须放在会话建立之后(runner 的 `--build-npm` 即此;先 build-npm 后 launch 会因服务端口被占而失败),也绝不能 pkill「清理」(杀的就是同一个常驻实例);构建触发重编译,与页面导航有竞速,runner 以沉淀等待 + 导航重试规避;
+- **PR 即真环境门禁**:宿主仓库(如 jgst)经 `workflow_call` 调用 `probe.yml`,在 self-hosted Mac(登录态常驻)上跑「polyfill@main + PR ref」组合;CI 用专用自动化端口 9421 与本地手工通道 9420 隔离互不干扰;checkout 布局复刻 `link:` 相对路径(`$WORKSPACE/cornworld-miniprogram-polyfill` + `host/<subdir>`)。冷启动 / 稳态复用 / 密集连发三种形态均实测 12/12。激活前置:两仓推 GitHub、调用方 workflow 替换 `uses:` 的占位 slug;
+- **真机接入位**:检查体全部经探针页契约(`__mpProbeRun`)与 evaluate 注入执行,与控制通道解耦 —— 上真机时把 runner 的通道适配换成 minium 真机调试(同一 DevTools 协议家族),检查体零改动;真机独有语义(切后台杀连接、chunked 非 2xx 无 body)在拿到设备后以 hijack 罐头时序 + 真机 checklist 逐项接入;
 - 探针页模板:`tools/probe/probe-page/`,契约是向 `globalThis` 注册 `__mpProbeRun()`(目标工程接入示例:jgst/miniapp `src/pages/probe/`);
 - **auth 说明(诚实版)**:DevTools 首次使用需微信扫码,登录态持久化在工具配置目录——GitHub 托管 runner 无法扫码,因此 `probe.yml` 默认 `self-hosted`(登录态常驻的 Mac),或 `workflow_call` 被业务仓库调用;`schedule` 每日冒烟捕捉基础库漂移;minitest 云测平台需企业主体,开源仓库不适用。
 

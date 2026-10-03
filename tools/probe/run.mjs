@@ -13,10 +13,14 @@
  *   node tools/probe/run.mjs --project <小程序工程路径> \
  *     [--page pages/probe/index] [--cli <devtools cli>] [--report probe-report.json]
  */
+import { execFile } from 'node:child_process'
 import { createServer } from 'node:http'
 import { writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { promisify } from 'node:util'
 import automator from 'miniprogram-automator'
+
+const execFileAsync = promisify(execFile)
 
 function parseArgs(argv) {
   const out = {}
@@ -35,6 +39,7 @@ const cliPath = args.cli ?? '/Applications/wechatwebdevtools.app/Contents/MacOS/
 const reportFile = args.report ?? 'probe-report.json'
 const wsPort = args.ws ?? '9420'
 const closeAfterRun = process.argv.includes('--close')
+const npmBuild = process.argv.includes('--build-npm')
 
 /**
  * 会话获取:优先 connect 到常驻实例 —— 复用已打开的开发者工具,全程零弹窗;
@@ -49,8 +54,28 @@ async function openSession() {
     console.log(`复用常驻开发者工具会话:${wsEndpoint}`)
     return mini
   } catch {
-    console.log('无常驻会话,拉起开发者工具(仅此一次开窗,之后一直复用)…')
-    return automator.launch({ cliPath, projectPath })
+    console.log(`无常驻会话,拉起开发者工具(自动化端口 ${wsPort},仅此一次开窗,之后一直复用)…`)
+    return automator.launch({ cliPath, projectPath, port: Number(wsPort) })
+  }
+}
+
+/**
+ * DevTools npm 构建(miniprogram_npm)。DevTools 是单实例架构:cli build-npm
+ * 会路由进已运行实例 —— 因此必须在会话建立之后调用(先 build-npm 后 launch
+ * 会因实例已占服务端口而 launch 失败);也绝不能 pkill "清理",那杀的是同一
+ * 个常驻实例。构建触发重编译,随后的页面导航即加载新 bundle。
+ */
+async function buildNpmInSession() {
+  if (!npmBuild) return
+  console.log('DevTools npm 构建(路由进当前实例)…')
+  // 成败以进程退出码为准(execFileAsync 非零退出会 reject);stdout 是
+  // { cost, warnings } 形态的 JSON,没有 code 字段
+  const { stdout } = await execFileAsync(cliPath, ['build-npm', '--project', projectPath], {
+    timeout: 120_000,
+  })
+  const parsed = JSON.parse(stdout || '{}')
+  if (parsed.warnings?.length) {
+    console.log(`npm 构建 warning ${parsed.warnings.length} 条(link: 包入口提示,可忽略)`)
   }
 }
 /** 本机真实 http 服务:供 DevTools 以真实 wx.request 直连(关闭域名校验) */
@@ -99,36 +124,51 @@ async function main() {
 
   const miniProgram = await openSession()
   try {
+    await buildNpmInSession()
+    if (npmBuild) {
+      // npm 构建触发 DevTools 重编译:立即导航会与重编译竞速,
+      // evaluate 通道在重编译窗口内会静默挂起(实测两轮复现)
+      await new Promise((r) => setTimeout(r, 4000))
+    }
     // 注意:automator 的 reLaunch/currentPage 在 Skyline 工程上不可靠
     // (reLaunch 谎报 ok 但页面栈不动,currentPage 取到旧页),
     // 改用 evaluate 注入 wx.navigateTo(实测可用)。
-    const navErr = await miniProgram.evaluate(
-      (path) =>
-        new Promise((resolve) => {
-          const nav = () => {
-            try {
-              globalThis.wx.navigateTo({
-                url: path,
-                complete: (r) => resolve(r.errMsg?.includes('fail') ? r.errMsg : null),
-              })
-            } catch (err) {
-              resolve(`navigateTo threw: ${err}`)
+    const navToProbePage = () =>
+      miniProgram.evaluate(
+        (path) =>
+          new Promise((resolve) => {
+            const nav = () => {
+              try {
+                globalThis.wx.navigateTo({
+                  url: path,
+                  complete: (r) => resolve(r.errMsg?.includes('fail') ? r.errMsg : null),
+                })
+              } catch (err) {
+                resolve(`navigateTo threw: ${err}`)
+              }
             }
-          }
-          // 常驻会话多轮复用:navigateTo 持续压栈(上限 10 层),
-          // 先退回栈底再进页;reLaunch 在 Skyline 工程上谎报成功,不可用。
-          // 退栈后必须等转场完成再进页(在 complete 里链式发起会因
-          // 转场中的同步异常吞掉 resolve,导致 evaluate 永久 pending)。
-          const depth = globalThis.getCurrentPages().length
-          if (depth > 1) {
-            globalThis.wx.navigateBack({ delta: depth - 1 })
-            setTimeout(nav, 1200)
-          } else {
-            nav()
-          }
-        }),
-      `/${pagePath}?origin=${encodeURIComponent(origin)}`,
-    )
+            // 常驻会话多轮复用:navigateTo 持续压栈(上限 10 层),
+            // 先退回栈底再进页;reLaunch 在 Skyline 工程上谎报成功,不可用。
+            // 退栈后必须等转场完成再进页(在 complete 里链式发起会因
+            // 转场中的同步异常吞掉 resolve,导致 evaluate 永久 pending)。
+            const depth = globalThis.getCurrentPages().length
+            if (depth > 1) {
+              globalThis.wx.navigateBack({ delta: depth - 1 })
+              setTimeout(nav, 1200)
+            } else {
+              nav()
+            }
+          }),
+        `/${pagePath}?origin=${encodeURIComponent(origin)}`,
+      )
+    let navErr
+    try {
+      navErr = await navToProbePage()
+    } catch {
+      // 重编译余波:等一拍再试一次
+      await new Promise((r) => setTimeout(r, 8000))
+      navErr = await navToProbePage()
+    }
     if (navErr) throw new Error(`探针页导航失败:${navErr}`)
     await new Promise((r) => setTimeout(r, 1500)) // 等探针页完成安装与自检
 
