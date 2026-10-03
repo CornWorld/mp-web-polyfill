@@ -1,0 +1,32 @@
+{
+  "name": "@cornworld/mp-eventsource",
+  "version": "0.1.0",
+  "description": "EventSource(Server-Sent Events)小程序 polyfill:wx.request enableChunked 传输 + eventsource-parser 规范解析 + 规范重连状态机",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": ["dist"],
+  "sideEffects": false,
+  "dependencies": {
+    "@cornworld/mp-core": "workspace:*",
+    "@cornworld/mp-text-encoding": "workspace:*",
+    "@cornworld/mp-url": "workspace:*",
+    "eventsource-parser": "^4.1.1"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --target es2020 --clean --sourcemap"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.0"
+  },
+  "license": "MIT"
+}

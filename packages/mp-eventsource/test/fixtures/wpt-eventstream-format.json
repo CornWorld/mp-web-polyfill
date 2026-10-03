@@ -1,0 +1,248 @@
+[
+  {
+    "name": "bom-stripped",
+    "stream": "﻿data: x\n\n",
+    "events": [
+      {
+        "data": "x"
+      }
+    ]
+  },
+  {
+    "name": "comments-ignored",
+    "stream": ":a\ndata: x\n\n: b\n\n",
+    "events": [
+      {
+        "data": "x"
+      }
+    ]
+  },
+  {
+    "name": "multiline-data",
+    "stream": "data: a\ndata: b\n\n",
+    "events": [
+      {
+        "data": "a\nb"
+      }
+    ]
+  },
+  {
+    "name": "crlf-and-cr-line-endings",
+    "stream": "data: a\r\ndata: b\r\r",
+    "events": [
+      {
+        "data": "a\nb"
+      }
+    ]
+  },
+  {
+    "name": "no-dispatch-without-empty-line",
+    "stream": "data: x",
+    "events": []
+  },
+  {
+    "name": "no-dispatch-on-single-newline",
+    "stream": "data: x\n",
+    "events": []
+  },
+  {
+    "name": "dispatch-on-empty-line",
+    "stream": "data: x\n\n",
+    "events": [
+      {
+        "data": "x"
+      }
+    ]
+  },
+  {
+    "name": "empty-data-no-dispatch",
+    "stream": "data:\n\n",
+    "events": [],
+    "deviation": "engine-emits-empty-data"
+  },
+  {
+    "name": "empty-data-field-then-value",
+    "stream": "data:\ndata: x\n\n",
+    "events": [
+      {
+        "data": "\nx"
+      }
+    ]
+  },
+  {
+    "name": "field-without-colon-is-value-empty",
+    "stream": "data\n\n",
+    "events": [],
+    "deviation": "engine-emits-empty-data"
+  },
+  {
+    "name": "event-field",
+    "stream": "event: hello\ndata: x\n\n",
+    "events": [
+      {
+        "event": "hello",
+        "data": "x"
+      }
+    ]
+  },
+  {
+    "name": "event-empty-falls-back-to-message",
+    "stream": "event:\ndata: x\n\n",
+    "events": [
+      {
+        "data": "x"
+      }
+    ]
+  },
+  {
+    "name": "id-captured",
+    "stream": "id: 5\ndata: x\n\n",
+    "events": [
+      {
+        "id": "5",
+        "data": "x"
+      }
+    ],
+    "lastId": "5"
+  },
+  {
+    "name": "id-position-irrelevant",
+    "stream": "data: x\nid: 6\n\n",
+    "events": [
+      {
+        "id": "6",
+        "data": "x"
+      }
+    ],
+    "lastId": "6"
+  },
+  {
+    "name": "id-empty-resets",
+    "stream": "id: 5\ndata: x\n\nid:\ndata: y\n\n",
+    "events": [
+      {
+        "id": "5",
+        "data": "x"
+      },
+      {
+        "id": "",
+        "data": "y"
+      }
+    ],
+    "lastId": ""
+  },
+  {
+    "name": "id-with-nul-ignored",
+    "stream": "id: bad\u0000id\ndata: x\n\n",
+    "events": [
+      {
+        "data": "x"
+      }
+    ],
+    "lastId": ""
+  },
+  {
+    "name": "retry-parsed",
+    "stream": "retry: 250\ndata: x\n\n",
+    "events": [
+      {
+        "data": "x"
+      }
+    ],
+    "retry": 250
+  },
+  {
+    "name": "retry-bogus-ignored",
+    "stream": "retry: abc\ndata: x\n\n",
+    "events": [
+      {
+        "data": "x"
+      }
+    ]
+  },
+  {
+    "name": "retry-empty-ignored",
+    "stream": "retry:\ndata: x\n\n",
+    "events": [
+      {
+        "data": "x"
+      }
+    ]
+  },
+  {
+    "name": "leading-space-stripped-once",
+    "stream": "data:  x\n\n",
+    "events": [
+      {
+        "data": " x"
+      }
+    ]
+  },
+  {
+    "name": "unknown-field-ignored",
+    "stream": "ignore: x\ndata: y\n\n",
+    "events": [
+      {
+        "data": "y"
+      }
+    ]
+  },
+  {
+    "name": "field-name-case-sensitive",
+    "stream": "Data: x\ndata: y\n\n",
+    "events": [
+      {
+        "data": "y"
+      }
+    ]
+  },
+  {
+    "name": "nul-kept-in-data",
+    "stream": "data: a\u0000b\n\n",
+    "events": [
+      {
+        "data": "a\u0000b"
+      }
+    ]
+  },
+  {
+    "name": "stream-split-mid-line",
+    "stream": [
+      "data: h",
+      "ello\n\ndata: w",
+      "orld\n\n"
+    ],
+    "events": [
+      {
+        "data": "hello"
+      },
+      {
+        "data": "world"
+      }
+    ]
+  },
+  {
+    "name": "utf8-multibyte-split",
+    "stream": [
+      "data: 小",
+      "程序\n\n"
+    ],
+    "events": [
+      {
+        "data": "小程序"
+      }
+    ]
+  },
+  {
+    "name": "multiple-events",
+    "stream": "data: 1\n\ndata: 2\n\n",
+    "events": [
+      {
+        "data": "1"
+      },
+      {
+        "data": "2"
+      }
+    ]
+  }
+]
