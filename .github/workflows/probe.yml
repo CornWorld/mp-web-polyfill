@@ -1,0 +1,87 @@
+name: Probe(小程序真机/DevTools 一致性探针)
+
+# C 层验收:同一份 fixture 语义在真实小程序运行时(逻辑层 JSCore/V8)里复跑。
+# 与 CI 的关系:PR 不跑本 workflow(DevTools 需要扫码登录态),按 schedule / 手动 /
+# 被其他仓库 workflow_call 调用。推荐挂在 self-hosted 的 Mac runner 上,
+# 微信开发者工具登录态持久化后无需人工干预(过期需重新扫码一次)。
+# 说明:官方 minium(Python)与 miniprogram-automator(JS)驱动的是同一个
+# DevTools 自动化端口;本仓库是 JS monorepo,选 automator 以复用工具链,
+# mock 能力(automator.mockWxMethod)留给业务层桩,桥接探针走真实传输。
+#
+# schedule 触发时没有 inputs:runner 需配置环境变量 PROBE_PROJECT(小程序工程
+# 绝对路径)与可选 PROBE_PAGE(探针页路径);两者皆缺时本 workflow 中性跳过
+# (默认探本仓库自身没有 project.config.json,直接跑必然失败)。
+
+on:
+  workflow_call:
+    inputs:
+      project-path:
+        description: 包含探针页的小程序工程路径(通常是调用方仓库)
+        required: false
+        type: string
+      probe-page:
+        description: 探针页路径
+        required: false
+        type: string
+        default: pages/probe/index
+      runs-on:
+        description: runner 标签(需已安装微信开发者工具并登录)
+        required: false
+        type: string
+        default: self-hosted
+      cli-path:
+        description: 微信开发者工具 cli 可执行文件路径
+        required: false
+        type: string
+        default: /Applications/wechatwebdevtools.app/Contents/MacOS/cli
+  workflow_dispatch:
+    inputs:
+      project-path:
+        description: 包含探针页的小程序工程路径
+        required: false
+        type: string
+      probe-page:
+        description: 探针页路径
+        required: false
+        type: string
+        default: pages/probe/index
+  schedule:
+    - cron: '0 21 * * *' # 每日 05:00(UTC+8)冒烟,捕捉基础库/引擎行为漂移
+
+jobs:
+  probe:
+    runs-on: ${{ inputs.runs-on || 'self-hosted' }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: 安装依赖并构建
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm build
+
+      - name: 运行探针(DevTools 自动化)
+        run: |
+          if [ -z "${{ inputs.project-path }}" ] && [ -z "$PROBE_PROJECT" ]; then
+            echo "::notice::未配置 inputs.project-path 或 runner 环境变量 PROBE_PROJECT,跳过(schedule 需在 runner 侧配置)"
+            exit 0
+          fi
+          node tools/probe/run.mjs \
+            --project "${{ inputs.project-path || env.PROBE_PROJECT || github.workspace }}" \
+            --page "${{ inputs.probe-page || env.PROBE_PAGE || 'pages/probe/index' }}" \
+            --cli "${{ inputs.cli-path || '/Applications/wechatwebdevtools.app/Contents/MacOS/cli' }}" \
+            --report probe-report.json
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: probe-report
+          path: probe-report.json
+          if-no-files-found: warn
