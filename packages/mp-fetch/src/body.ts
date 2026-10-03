@@ -53,7 +53,9 @@ export abstract class BodyBase {
     this.#bodyUsed = true
     if (this.#stream) {
       const reader = (
-        this.#stream.stream as { getReader(): { read(): Promise<{ done: boolean; value?: Uint8Array }> } }
+        this.#stream.stream as {
+          getReader(): { read(): Promise<{ done: boolean; value?: Uint8Array }> }
+        }
       ).getReader()
       const chunks: Uint8Array[] = []
       for (;;) {

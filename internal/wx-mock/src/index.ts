@@ -132,9 +132,7 @@ function createRequestMock(ctx: { origin: string; requests: CapturedRequest[] })
         res.on('end', () => {
           if (aborted) return
           const full = Buffer.concat(buffered)
-          settleSuccess(
-            options.responseType === 'arraybuffer' ? toAb(full) : full.toString('utf8'),
-          )
+          settleSuccess(options.responseType === 'arraybuffer' ? toAb(full) : full.toString('utf8'))
         })
         res.on('error', () => settleFail('request:fail'))
       },
@@ -142,7 +140,9 @@ function createRequestMock(ctx: { origin: string; requests: CapturedRequest[] })
 
     nodeReq.on('error', (err: Error & { code?: string }) => {
       settleFail(
-        aborted ? 'request:fail abort' : `request:fail ${err.message || err.code || 'network error'}`,
+        aborted
+          ? 'request:fail abort'
+          : `request:fail ${err.message || err.code || 'network error'}`,
       )
     })
 
@@ -206,7 +206,9 @@ function createUploadFileMock(ctx: { origin: string; requests: CapturedRequest[]
       push(value)
       push('\r\n')
     }
-    push(`--${boundary}\r\nContent-Disposition: form-data; name="${options.name}"; filename="${options.filePath.split('/').pop() ?? 'file'}"\r\n`)
+    push(
+      `--${boundary}\r\nContent-Disposition: form-data; name="${options.name}"; filename="${options.filePath.split('/').pop() ?? 'file'}"\r\n`,
+    )
     push('Content-Type: application/octet-stream\r\n\r\n')
     parts.push(fileBytes)
     push('\r\n')
@@ -232,7 +234,10 @@ function createUploadFileMock(ctx: { origin: string; requests: CapturedRequest[]
         res.on('end', () => {
           if (settled) return
           settled = true
-          options.success?.({ statusCode: res.statusCode ?? 0, data: Buffer.concat(chunks).toString('utf8') })
+          options.success?.({
+            statusCode: res.statusCode ?? 0,
+            data: Buffer.concat(chunks).toString('utf8'),
+          })
         })
         res.on('error', () => settleFail('uploadFile:fail'))
       },

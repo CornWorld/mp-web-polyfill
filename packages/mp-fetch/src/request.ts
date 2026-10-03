@@ -8,13 +8,7 @@ import { Headers, type HeadersInit } from './headers'
 import { serializeFormData } from './multipart'
 
 export type MPBodyInit =
-  | string
-  | ArrayBuffer
-  | ArrayBufferView
-  | Blob
-  | FormData
-  | URLSearchParamsInstance
-  | null
+  string | ArrayBuffer | ArrayBufferView | Blob | FormData | URLSearchParamsInstance | null
 
 export interface MPRequestInit {
   method?: string
@@ -81,8 +75,7 @@ export class Request extends BodyBase {
       if (shouldSet) this.headers.set('content-type', serialized.contentType)
     }
     this.signal =
-      init.signal ??
-      (input instanceof Request ? input.signal : new AbortController().signal)
+      init.signal ?? (input instanceof Request ? input.signal : new AbortController().signal)
     this.mp = init.mp ?? (input instanceof Request ? input.mp : undefined)
   }
 }

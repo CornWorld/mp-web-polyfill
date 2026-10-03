@@ -6,8 +6,18 @@
   { "name": "nul-kept", "str": "\u0000a", "bytes": [0, 97] },
   { "name": "2byte", "str": "é", "bytes": [195, 169] },
   { "name": "surrogate-pair", "str": "\uD800\uDC00", "bytes": [240, 144, 128, 128] },
-  { "name": "lone-high-surrogate-to-fffd", "str": "\uD800a", "bytes": [239, 191, 189, 97], "expected": "�a" },
-  { "name": "lone-low-surrogate-to-fffd", "str": "\uDFFF", "bytes": [239, 191, 189], "expected": "�" },
+  {
+    "name": "lone-high-surrogate-to-fffd",
+    "str": "\uD800a",
+    "bytes": [239, 191, 189, 97],
+    "expected": "�a"
+  },
+  {
+    "name": "lone-low-surrogate-to-fffd",
+    "str": "\uDFFF",
+    "bytes": [239, 191, 189],
+    "expected": "�"
+  },
   { "name": "overlong-c0-80", "bytes": [192, 128], "expected": "��" },
   { "name": "ed-a0-80-cesu-surrogate", "bytes": [237, 160, 128], "expected": "���" },
   { "name": "f4-90-overflow", "bytes": [244, 144, 128, 128], "expected": "����" },

@@ -12,11 +12,10 @@ export type MPResponseInit = {
   headers?: HeadersInit
 }
 
-export type MPBodyInit = string | ArrayBuffer | ArrayBufferView | Blob | FormData | URLSearchParamsInstance | null
+export type MPBodyInit =
+  string | ArrayBuffer | ArrayBufferView | Blob | FormData | URLSearchParamsInstance | null
 
-function serializeBody(
-  body: MPBodyInit,
-): { bytes: Uint8Array; contentType?: string } | null {
+function serializeBody(body: MPBodyInit): { bytes: Uint8Array; contentType?: string } | null {
   if (body === undefined || body === null) return null
   if (typeof body === 'string')
     return { bytes: utf8Encode(body), contentType: 'text/plain;charset=UTF-8' }

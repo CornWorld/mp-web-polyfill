@@ -1,10 +1,4 @@
-import {
-  getWx,
-  throwIfAborted,
-  toArrayBuffer,
-  concatBytes,
-  MPAbortError,
-} from '@cornworld/mp-core'
+import { getWx, throwIfAborted, toArrayBuffer, concatBytes, MPAbortError } from '@cornworld/mp-core'
 import { TextEncoder } from '@cornworld/mp-text-encoding'
 import { URL as MPURL } from '@cornworld/mp-url'
 import { Headers, headersToRecord } from './headers'

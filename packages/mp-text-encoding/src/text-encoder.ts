@@ -67,8 +67,7 @@ export class TextEncoder {
         consumed = 1
       }
 
-      const needed =
-        cp <= 0x7f ? 1 : cp <= 0x7ff ? 2 : cp <= 0xffff ? 3 : 4
+      const needed = cp <= 0x7f ? 1 : cp <= 0x7ff ? 2 : cp <= 0xffff ? 3 : 4
       if (written + needed > destination.length) break
 
       const tmp: number[] = []

@@ -207,11 +207,7 @@
   },
   {
     "name": "stream-split-mid-line",
-    "stream": [
-      "data: h",
-      "ello\n\ndata: w",
-      "orld\n\n"
-    ],
+    "stream": ["data: h", "ello\n\ndata: w", "orld\n\n"],
     "events": [
       {
         "data": "hello"
@@ -223,10 +219,7 @@
   },
   {
     "name": "utf8-multibyte-split",
-    "stream": [
-      "data: 小",
-      "程序\n\n"
-    ],
+    "stream": ["data: 小", "程序\n\n"],
     "events": [
       {
         "data": "小程序"

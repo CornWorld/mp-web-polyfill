@@ -25,21 +25,23 @@ describe('wx.uploadFile 模拟(磁盘文件 → multipart)', () => {
     const filePath = join(tempDir, 'avatar.png')
     writeFileSync(filePath, Buffer.from([0x89, 0x50, 0x4e, 0x47, 1, 2, 3]))
 
-    const done = new Promise<{ body: Buffer; headers: Record<string, string> }>((resolve, reject) => {
-      mock.handler = (req, res, body) => {
-        resolve({ body: body, headers: req.headers as Record<string, string> })
-        res.writeHead(200, { 'content-type': 'application/json' })
-        res.end(JSON.stringify({ id: 'r1' }))
-      }
-      mock.wx.uploadFile!({
-        url: `${mock.origin}/api/collections/users/records`,
-        filePath,
-        name: 'avatar',
-        header: { authorization: 'TOKEN123' },
-        formData: { title: '我的头像' },
-        fail: (err) => reject(new Error(err.errMsg)),
-      })
-    })
+    const done = new Promise<{ body: Buffer; headers: Record<string, string> }>(
+      (resolve, reject) => {
+        mock.handler = (req, res, body) => {
+          resolve({ body: body, headers: req.headers as Record<string, string> })
+          res.writeHead(200, { 'content-type': 'application/json' })
+          res.end(JSON.stringify({ id: 'r1' }))
+        }
+        mock.wx.uploadFile!({
+          url: `${mock.origin}/api/collections/users/records`,
+          filePath,
+          name: 'avatar',
+          header: { authorization: 'TOKEN123' },
+          formData: { title: '我的头像' },
+          fail: (err) => reject(new Error(err.errMsg)),
+        })
+      },
+    )
 
     const { body, headers } = await done
     expect(headers['authorization']).toBe('TOKEN123')

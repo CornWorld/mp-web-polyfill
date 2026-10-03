@@ -20,8 +20,6 @@ export function isAbortError(value: unknown): value is MPAbortError {
 /** 与 DOM 标准一致:signal 已中止时抛出 AbortError。 */
 export function throwIfAborted(signal?: { aborted: boolean; reason?: unknown }): void {
   if (signal?.aborted) {
-    throw signal.reason instanceof Error
-      ? signal.reason
-      : createAbortError()
+    throw signal.reason instanceof Error ? signal.reason : createAbortError()
   }
 }

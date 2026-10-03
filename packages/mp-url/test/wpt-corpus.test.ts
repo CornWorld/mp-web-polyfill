@@ -30,7 +30,9 @@ if (!existsSync(DATA_FILE)) {
   })
 } else {
   const pinFile = fileURLToPath(new URL('./fixtures/wpt-pin.json', import.meta.url))
-  const pin = existsSync(pinFile) ? (JSON.parse(readFileSync(pinFile, 'utf8')) as { sha: string }) : null
+  const pin = existsSync(pinFile)
+    ? (JSON.parse(readFileSync(pinFile, 'utf8')) as { sha: string })
+    : null
   const baseline = existsSync(BASELINE_FILE)
     ? (JSON.parse(readFileSync(BASELINE_FILE, 'utf8')) as string[])
     : []
@@ -78,7 +80,10 @@ if (!existsSync(DATA_FILE)) {
       }
       const newDeviations = failingKeys.filter((key) => !baseline.includes(key))
       const stale = baseline.filter((key) => !failingKeys.includes(key) && passingKeys.has(key))
-      expect(newDeviations, '引擎出现基线外的新偏差(升级回归);确认后 UPDATE_URL_BASELINE=1 刷新基线').toEqual([])
+      expect(
+        newDeviations,
+        '引擎出现基线外的新偏差(升级回归);确认后 UPDATE_URL_BASELINE=1 刷新基线',
+      ).toEqual([])
       expect(stale, '基线中的偏差已消失,请 UPDATE_URL_BASELINE=1 刷新基线').toEqual([])
     })
   })

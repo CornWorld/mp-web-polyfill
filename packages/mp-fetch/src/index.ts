@@ -4,10 +4,6 @@ export { Request, type MPRequestInit, type MPRequestInfo, type MPBodyInit } from
 export { Response, type MPResponseInit } from './response'
 export { AbortController, AbortSignal } from './abort'
 export { Blob, File, FormData, type BlobPart, type FormDataEntryValue } from './form-data'
-export {
-  setReadableStreamClass,
-  getReadableStreamClass,
-  isStreamingSupported,
-} from './streams'
+export { setReadableStreamClass, getReadableStreamClass, isStreamingSupported } from './streams'
 
 export const MARKER = Symbol.for('cornworld.mp-polyfill')

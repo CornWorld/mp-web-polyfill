@@ -24,9 +24,7 @@ export class Blob {
       else if (part instanceof Blob) chunks.push(part._bytes)
       else if (part instanceof ArrayBuffer) chunks.push(new Uint8Array(part))
       else if (ArrayBuffer.isView(part))
-        chunks.push(
-          new Uint8Array(part.buffer, part.byteOffset, part.byteLength),
-        )
+        chunks.push(new Uint8Array(part.buffer, part.byteOffset, part.byteLength))
       else throw new TypeError('Unsupported Blob part')
     }
     this.#bytes = concatBytes(chunks)
@@ -99,7 +97,11 @@ export class FormData {
   #entries: FormDataEntry[] = []
 
   append(name: string, value: string | Blob, filename?: string): void {
-    this.#entries.push({ name: String(name), value, filename: this.#resolveFilename(value, filename) })
+    this.#entries.push({
+      name: String(name),
+      value,
+      filename: this.#resolveFilename(value, filename),
+    })
   }
 
   set(name: string, value: string | Blob, filename?: string): void {

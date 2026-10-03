@@ -15,8 +15,9 @@ interface RSController {
   error(err: unknown): void
 }
 
-let readableStreamClass: ReadableStreamClass | undefined = (globalThis as { ReadableStream?: ReadableStreamClass })
-  .ReadableStream
+let readableStreamClass: ReadableStreamClass | undefined = (
+  globalThis as { ReadableStream?: ReadableStreamClass }
+).ReadableStream
 
 /**
  * 注入 ReadableStream 实现(推荐 web-streams-polyfill)。

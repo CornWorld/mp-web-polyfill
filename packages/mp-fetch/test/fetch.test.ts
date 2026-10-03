@@ -203,7 +203,11 @@ describe('fetch 桥(传输协议)', () => {
       res.end()
     }
     const response = await fetch(`${mock.origin}/sse`, { mp: { enableChunked: true } })
-    const reader = (response.body as unknown as { getReader(): { read(): Promise<{ done: boolean; value?: Uint8Array }> } }).getReader()
+    const reader = (
+      response.body as unknown as {
+        getReader(): { read(): Promise<{ done: boolean; value?: Uint8Array }> }
+      }
+    ).getReader()
     let text = ''
     for (;;) {
       const { done, value } = await reader.read()
@@ -249,9 +253,9 @@ describe('fetch 桥(传输协议)', () => {
       res.write('partial')
       // 挂住不 end
     }
-    await expect(
-      fetch(`${mock.origin}/slow`, { mp: { timeout: 60 } }),
-    ).rejects.toThrowError(TypeError)
+    await expect(fetch(`${mock.origin}/slow`, { mp: { timeout: 60 } })).rejects.toThrowError(
+      TypeError,
+    )
   })
 
   it('已中止的 signal:立即 reject,不发起请求', async () => {
