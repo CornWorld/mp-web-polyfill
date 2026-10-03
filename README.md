@@ -127,6 +127,10 @@ import { PocketBase } from 'pocketbase'
 
 ```bash
 node tools/probe/run.mjs --project <小程序工程路径> --page pages/probe/probe
+# 包装 SDK 全链路 demo(auth/CRUD/文件上传/realtime),指向 Docker PB:
+node tools/probe/run.mjs --project <工程> --page pages/probe/probe \
+  --ws 9421 --build-npm --fresh --pb http://127.0.0.1:8091
+# Docker PB(与原生 8090 并存,同版本同种子):pb-sdk 仓库 scripts/ensure-pb-docker.sh
 ```
 
 - 驱动:微信开发者工具自动化端口;本仓库用 `miniprogram-automator`(JS,与工具链同源),官方 `minium`(Python)驱动同一端口。**mock 语义勘误(2026-10-03 核对官方文档)**:两者的官方 mock(`mockWxMethod` / `mock_wx_method`)都是「结果替换」,没有函数体形式;真正的「函数体接管」原语是 `evaluate()` 向 AppService 注入代码——automator 与 minium 同源具备,无需为此引入 Python 工具链;

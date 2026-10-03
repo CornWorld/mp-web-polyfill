@@ -136,7 +136,7 @@ jobs:
           # 单实例架构,先 build-npm 后 launch 会因实例占用服务端口而失败;
           # 由探针 runner 在会话建立后经 --build-npm 路由进常驻实例执行。
 
-      - name: 运行探针(专用自动化端口,disconnect 保留实例供下次复用)
+      - name: 运行探针(--fresh:每轮冷启动,代码变更后常驻实例可能半编译态)
         if: steps.src.outputs.mode != 'skip'
         run: |
           if [ "${{ steps.src.outputs.mode }}" = "repo" ]; then
@@ -151,6 +151,7 @@ jobs:
             --ws "${{ inputs.ws-port || '9421' }}" \
             --cli "${{ inputs.cli-path || '/Applications/wechatwebdevtools.app/Contents/MacOS/cli' }}" \
             --build-npm \
+            --fresh \
             --report probe-report.json
       - uses: actions/upload-artifact@v4
         if: always()

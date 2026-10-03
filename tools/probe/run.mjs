@@ -24,8 +24,17 @@ const execFileAsync = promisify(execFile)
 
 function parseArgs(argv) {
   const out = {}
-  for (let i = 0; i < argv.length; i += 2) {
-    out[argv[i].replace(/^--/, '')] = argv[i + 1]
+  for (let i = 0; i < argv.length; i++) {
+    const key = argv[i].replace(/^--/, '')
+    const next = argv[i + 1]
+    // 无值 flag(--close/--build-npm):后随 token 以 -- 开头或缺省时按布尔处理,
+    // 否则成对的 key-value 会被 flag 吃掉一个(本次 --pb 被 --build-npm 吞掉,实测)
+    if (next === undefined || next.startsWith('--')) {
+      out[key] = true
+    } else {
+      out[key] = next
+      i++
+    }
   }
   return out
 }
@@ -40,6 +49,12 @@ const reportFile = args.report ?? 'probe-report.json'
 const wsPort = args.ws ?? '9420'
 const closeAfterRun = process.argv.includes('--close')
 const npmBuild = process.argv.includes('--build-npm')
+// --fresh:先 cli quit 再 launch —— 代码变更后常驻实例可能卡在半编译态
+// (实测重编译 × 导航竞速可致页面崩、契约不注册),CI/构建后必用。
+const freshSession = process.argv.includes('--fresh')
+// --pb <base>:透传给探针页,启用「包装 SDK 全链路 demo」检查组
+// (如 Docker PB:http://127.0.0.1:8091)
+const demoPbBase = args.pb
 
 /**
  * 会话获取:优先 connect 到常驻实例 —— 复用已打开的开发者工具,全程零弹窗;
@@ -49,14 +64,21 @@ const npmBuild = process.argv.includes('--build-npm')
  */
 async function openSession() {
   const wsEndpoint = `ws://127.0.0.1:${wsPort}`
-  try {
-    const mini = await automator.connect({ wsEndpoint })
-    console.log(`复用常驻开发者工具会话:${wsEndpoint}`)
-    return mini
-  } catch {
-    console.log(`无常驻会话,拉起开发者工具(自动化端口 ${wsPort},仅此一次开窗,之后一直复用)…`)
-    return automator.launch({ cliPath, projectPath, port: Number(wsPort) })
+  if (!freshSession) {
+    try {
+      const mini = await automator.connect({ wsEndpoint })
+      console.log(`复用常驻开发者工具会话:${wsEndpoint}`)
+      return mini
+    } catch {
+      // 无常驻会话,走 launch
+    }
+  } else {
+    console.log('--fresh:先退出既有实例(代码变更后常驻实例可能处于半编译态)…')
+    await execFileAsync(cliPath, ['quit']).catch(() => null)
+    await new Promise((r) => setTimeout(r, 3000))
   }
+  console.log(`拉起开发者工具(自动化端口 ${wsPort})…`)
+  return automator.launch({ cliPath, projectPath, port: Number(wsPort) })
 }
 
 /**
@@ -159,7 +181,7 @@ async function main() {
               nav()
             }
           }),
-        `/${pagePath}?origin=${encodeURIComponent(origin)}`,
+        `/${pagePath}?origin=${encodeURIComponent(origin)}${demoPbBase ? `&pb=${encodeURIComponent(demoPbBase)}` : ''}`,
       )
     let navErr
     try {
@@ -172,9 +194,30 @@ async function main() {
     if (navErr) throw new Error(`探针页导航失败:${navErr}`)
     await new Promise((r) => setTimeout(r, 1500)) // 等探针页完成安装与自检
 
-    const staticResult = await miniProgram.evaluate(
-      () => globalThis.__mpProbeRun?.() ?? { error: '探针页未注册 __mpProbeRun' },
-    )
+    // 探针页契约可能因「重编译 × 导航」竞速而未注册(页面崩在半编译状态):
+    // 对未注册整轮重进页面(栈重置导航),最多 3 次;检查渐进追加(demo 组含
+    // 网络往返),每轮轮询至条数稳定再判定。
+    const readProbe = () =>
+      miniProgram.evaluate(
+        () => globalThis.__mpProbeRun?.() ?? { error: '探针页未注册 __mpProbeRun' },
+      )
+    let staticResult = { error: '尚未读取' }
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      staticResult = await readProbe()
+      for (let i = 0; i < 30 && Array.isArray(staticResult.checks); i++) {
+        await new Promise((r) => setTimeout(r, 2000))
+        const again = await readProbe()
+        const prev = staticResult.checks.length
+        staticResult = again
+        if (Array.isArray(again.checks) && again.checks.length === prev) break
+      }
+      if (!staticResult.error) break
+      console.log(`探针页契约未就绪(第 ${attempt} 次),重进页面…`)
+      if (attempt < 3) {
+        await navToProbePage().catch(() => null)
+        await new Promise((r) => setTimeout(r, 3000))
+      }
+    }
 
     // 真实传输检查:在页面上下文用 wx 桥访问本机服务
     const liveResult = await miniProgram.evaluate(async (liveOrigin) => {
