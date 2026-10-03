@@ -44,7 +44,13 @@ async function main() {
   mkdirSync(OUT_DIR, { recursive: true })
   writeFileSync(DATA_FILE, JSON.stringify(subset, null, 1))
   const previousPin = existsSync(PIN_FILE) ? JSON.parse(readFileSync(PIN_FILE, 'utf8')) : null
-  const pin = { repo: REPO, sha, fetchedAt: new Date().toISOString(), total: all.length, kept: subset.length }
+  const pin = {
+    repo: REPO,
+    sha,
+    fetchedAt: new Date().toISOString(),
+    total: all.length,
+    kept: subset.length,
+  }
   writeFileSync(PIN_FILE, JSON.stringify(pin, null, 2))
 
   process.stdout.write(
