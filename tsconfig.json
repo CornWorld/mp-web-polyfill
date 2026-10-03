@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2020"],
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "useDefineForClassFields": true
+  },
+  "files": [],
+  "references": [
+    { "path": "packages/mp-core" },
+    { "path": "packages/mp-text-encoding" },
+    { "path": "packages/mp-url" },
+    { "path": "packages/mp-fetch" },
+    { "path": "packages/mp-eventsource" },
+    { "path": "packages/mp-storage" },
+    { "path": "packages/mp-web-runtime" }
+  ]
+}

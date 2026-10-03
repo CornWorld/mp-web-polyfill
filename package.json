@@ -1,0 +1,45 @@
+{
+  "name": "cornworld-miniprogram-polyfill",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "微信小程序逻辑层 Web API polyfills(fetch / EventSource / TextEncoder / URL / storage…),WPT 一致性验收",
+  "packageManager": "pnpm@10.13.1",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "build": "pnpm -r --filter './packages/*' run build",
+    "typecheck": "tsc -b",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "sync:wpt": "node scripts/sync-wpt.mjs",
+    "changeset": "changeset",
+    "changeset:version": "changeset version",
+    "changeset:publish": "changeset publish --provenance",
+    "pack:all": "pnpm -r --filter './packages/*' exec npm pack"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.29.0",
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.0.0",
+    "eslint": "^10.11.0",
+    "globals": "^17.13.0",
+    "miniprogram-automator": "^0.12.1",
+    "prettier": "^3.9.9",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.71.0",
+    "vitest": "^3.2.4",
+    "web-streams-polyfill": "^4.1.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  }
+}

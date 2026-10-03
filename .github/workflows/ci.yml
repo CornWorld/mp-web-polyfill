@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: 安装依赖
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: 类型检查
+        run: pnpm typecheck
+
+      - name: 构建
+        run: pnpm build
+
+      - name: 测试(WPT 一致性 + 桥接协议)
+        run: pnpm test
+
+      - name: 打包 npm tarballs
+        run: |
+          pnpm pack:all
+          mkdir -p dist-artifacts
+          find . -name '*.tgz' -not -path './node_modules/*' -exec mv {} dist-artifacts/ \;
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: npm-tarballs-${{ github.sha }}
+          path: dist-artifacts/
+          retention-days: 14
+          if-no-files-found: error
