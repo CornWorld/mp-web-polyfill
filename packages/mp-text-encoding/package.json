@@ -1,0 +1,29 @@
+{
+  "name": "@cornworld/mp-text-encoding",
+  "version": "0.1.0",
+  "description": "TextEncoder / TextDecoder(UTF-8)小程序 polyfill,按 WHATWG Encoding 规范实现,支持流式 decode",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": ["dist"],
+  "sideEffects": false,
+  "dependencies": {
+    "@cornworld/mp-core": "workspace:*"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --target es2020 --clean --sourcemap"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.0"
+  },
+  "license": "MIT"
+}

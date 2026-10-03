@@ -1,0 +1,42 @@
+[
+  { "name": "ascii", "bytes": [104, 105], "expected": "hi" },
+  { "name": "euro", "str": "€", "bytes": [226, 130, 172] },
+  { "name": "4byte-music", "str": "𝄞", "bytes": [240, 157, 132, 158] },
+  { "name": "cjk", "str": "小程序", "bytes": [229, 176, 143, 231, 168, 139, 229, 186, 143] },
+  { "name": "nul-kept", "str": "\u0000a", "bytes": [0, 97] },
+  { "name": "2byte", "str": "é", "bytes": [195, 169] },
+  { "name": "surrogate-pair", "str": "\uD800\uDC00", "bytes": [240, 144, 128, 128] },
+  { "name": "lone-high-surrogate-to-fffd", "str": "\uD800a", "bytes": [239, 191, 189, 97], "expected": "�a" },
+  { "name": "lone-low-surrogate-to-fffd", "str": "\uDFFF", "bytes": [239, 191, 189], "expected": "�" },
+  { "name": "overlong-c0-80", "bytes": [192, 128], "expected": "��" },
+  { "name": "ed-a0-80-cesu-surrogate", "bytes": [237, 160, 128], "expected": "���" },
+  { "name": "f4-90-overflow", "bytes": [244, 144, 128, 128], "expected": "����" },
+  { "name": "e0-80-80-overlong", "bytes": [224, 128, 128], "expected": "���" },
+  { "name": "truncated-continuation", "bytes": [195], "expected": "�" },
+  { "name": "bare-continuation", "bytes": [128], "expected": "�" },
+  { "name": "ff-ff-invalid-start", "bytes": [255, 254, 97], "expected": "��a" },
+  { "name": "bom-stripped-by-default", "bytes": [239, 187, 191, 97], "expected": "a" },
+  {
+    "name": "bom-kept-with-ignoreBOM",
+    "bytes": [239, 187, 191, 97],
+    "expected": "﻿a",
+    "options": { "ignoreBOM": true }
+  },
+  { "name": "fatal-invalid", "bytes": [255], "expected": null, "fatalThrows": true },
+  { "name": "fatal-truncated", "bytes": [195], "expected": null, "fatalThrows": true },
+  {
+    "name": "stream-split-4byte",
+    "splits": [[240], [157], [132], [158]],
+    "expected": "𝄞"
+  },
+  {
+    "name": "stream-split-with-trailing-ascii",
+    "splits": [[229], [176, 143], [97]],
+    "expected": "小a"
+  },
+  {
+    "name": "stream-invalid-then-valid",
+    "splits": [[255], [97]],
+    "expected": "�a"
+  }
+]
