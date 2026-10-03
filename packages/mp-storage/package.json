@@ -1,0 +1,29 @@
+{
+  "name": "@cornworld/mp-storage",
+  "version": "0.1.0",
+  "description": "localStorage / Storage 小程序 polyfill,底层桥接 wx.setStorageSync;语义差异(单 key 1MB、总量 10MB、无 storage event)显式文档化",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": ["dist"],
+  "sideEffects": false,
+  "dependencies": {
+    "@cornworld/mp-core": "workspace:*"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --target es2020 --clean --sourcemap"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.0"
+  },
+  "license": "MIT"
+}
