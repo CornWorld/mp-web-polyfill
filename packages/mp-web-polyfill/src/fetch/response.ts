@@ -69,15 +69,23 @@ export class Response extends BodyBase {
     this.ok = status >= 200 && status < 300
   }
 
-  /** 内部构造口:绕开 status 校验(error() 需要 status 0)。 */
-  private static makeRaw(params: { bytes?: Uint8Array | null; status: number }): Response {
-    const response = new Response(null, { status: 200 })
-    ;(response as unknown as { status: number }).status = params.status
+  /** 内部构造口:绕开 status 校验(error() 需要 status 0);ok 随 status 重算。 */
+  private static makeRaw(params: {
+    bytes?: Uint8Array | null
+    status: number
+    type?: 'basic' | 'error'
+  }): Response {
+    const response = new Response(params.bytes ?? null, { status: 200 })
+    const mutable = response as unknown as { status: number; ok: boolean; type: 'basic' | 'error' }
+    mutable.status = params.status
+    mutable.ok = params.status >= 200 && params.status < 300
+    if (params.type) mutable.type = params.type
     return response
   }
 
   static error(): Response {
-    return Response.makeRaw({ status: 0 })
+    // 规范:error response 为 status 0 / ok false / type 'error'
+    return Response.makeRaw({ status: 0, type: 'error' })
   }
 
   static json(data: unknown, init: MPResponseInit = {}): Response {

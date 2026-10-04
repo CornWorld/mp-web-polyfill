@@ -106,6 +106,13 @@ describe('Request / Response 语义', () => {
     expect(await response.json()).toEqual({ ok: 1 })
   })
 
+  it('Response.error():status 0 / ok false / type error(规范语义)', () => {
+    const response = Response.error()
+    expect(response.status).toBe(0)
+    expect(response.ok).toBe(false)
+    expect(response.type).toBe('error')
+  })
+
   it('非法 status 抛 RangeError,redirect 校验状态码', () => {
     expect(() => new Response('x', { status: 199 })).toThrowError(RangeError)
     expect(() => Response.redirect('/x', 200)).toThrowError(RangeError)
@@ -274,5 +281,31 @@ describe('fetch 桥(传输协议)', () => {
     }
     const response = await fetch(`${mock.origin}/multi`)
     expect(response.headers.get('x-multi')).toBe('a, b')
+  })
+
+  it('响应 header 键保留原始大小写(真机形态),Headers 仍大小写不敏感', async () => {
+    mock.handler = (_req, res) => {
+      res.writeHead(200, { 'Content-Type': 'text/plain', 'X-MiXeD': 'v' })
+      res.end('ok')
+    }
+    const response = await fetch(`${mock.origin}/case`)
+    expect(response.headers.get('content-type')).toBe('text/plain')
+    expect(response.headers.get('X-MIXED')).toBe('v')
+  })
+
+  it('旧基础库无 chunked 事件:enableChunked 兜底用 success 全量 body', async () => {
+    const originalRequest = mock.wx.request
+    // 模拟旧基础库:任务不带 onHeadersReceived / onChunkReceived
+    mock.wx.request = (options) => {
+      const task = originalRequest(options)
+      return { abort: () => task.abort() }
+    }
+    mock.handler = (_req, res) => {
+      res.writeHead(200, { 'content-type': 'text/plain' })
+      res.write('ab')
+      res.end('c')
+    }
+    const response = await fetch(`${mock.origin}/legacy`, { mp: { enableChunked: true } })
+    expect(await response.text()).toBe('abc')
   })
 })

@@ -50,6 +50,21 @@ function flattenHeaders(headers: IncomingMessage['headers']): Record<string, str
   return out
 }
 
+/**
+ * 响应头还原:按 rawHeaders 保留服务端原始大小写(真机 onHeadersReceived
+ * 的实测形态;Node 的 res.headers 会小写化,不能用于模拟)。
+ * 多值 header 以逗号合并,与真机返回形态一致。
+ */
+function headersFromRaw(rawHeaders: string[]): Record<string, string> {
+  const out: Record<string, string> = {}
+  for (let i = 0; i + 1 < rawHeaders.length; i += 2) {
+    const name = rawHeaders[i]!
+    const value = rawHeaders[i + 1]!
+    out[name] = Object.prototype.hasOwnProperty.call(out, name) ? `${out[name]}, ${value}` : value
+  }
+  return out
+}
+
 function toAb(buffer: Buffer): ArrayBuffer {
   return buffer.buffer.slice(
     buffer.byteOffset,
@@ -120,7 +135,7 @@ function createRequestMock(ctx: { origin: string; requests: CapturedRequest[] })
       },
       (res) => {
         lastStatus = res.statusCode ?? 0
-        lastHeaders = flattenHeaders(res.headers)
+        lastHeaders = headersFromRaw(res.rawHeaders)
         for (const cb of headerListeners) cb({ statusCode: lastStatus, header: lastHeaders })
         res.on('data', (chunk: Buffer) => {
           if (aborted) return

@@ -60,6 +60,7 @@ export function fetch(input: MPRequestInfo, init: MPRequestInit = {}): Promise<R
     const settle = (fn: () => void) => {
       if (settled) return
       settled = true
+      signal.removeEventListener('abort', onAbort)
       fn()
     }
 
@@ -84,6 +85,9 @@ export function fetch(input: MPRequestInfo, init: MPRequestInit = {}): Promise<R
     }
 
     let task: ReturnType<typeof wx.request>
+    const onAbort = () => {
+      task.abort()
+    }
     try {
       task = wx.request({
         url: request.url,
@@ -105,7 +109,13 @@ export function fetch(input: MPRequestInfo, init: MPRequestInit = {}): Promise<R
               res.data instanceof ArrayBuffer
                 ? new Uint8Array(res.data)
                 : new TextEncoder().encode(String(res.data))
-            resolve(buildResponse(enableChunked ? concatBytes(bufferedChunks) : bytes))
+            // 旧基础库不认识 enableChunked 时无 onChunkReceived,bufferedChunks 为空:
+            // 兜底用 success 回调的全量 data,避免 body 恒为空
+            resolve(
+              buildResponse(
+                enableChunked && bufferedChunks.length > 0 ? concatBytes(bufferedChunks) : bytes,
+              ),
+            )
           })
         },
         fail: (err) => {
@@ -146,13 +156,7 @@ export function fetch(input: MPRequestInfo, init: MPRequestInit = {}): Promise<R
     }
 
     if (!signal.aborted) {
-      signal.addEventListener(
-        'abort',
-        () => {
-          task.abort()
-        },
-        { once: true },
-      )
+      signal.addEventListener('abort', onAbort, { once: true })
     }
   })
 }
