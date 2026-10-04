@@ -2,13 +2,13 @@
 
 微信小程序逻辑层 Web API polyfill 家族:`fetch` / `EventSource` / `URL` / `TextEncoder` / `localStorage` / `FormData`。
 
-- 组装层 + 冲突管理,非从零造轮子
-- 双引擎通用:Skyline / WebView 只影响渲染层,逻辑层 API 一致
-- 小程序逻辑层无 `fetch` / `EventSource` / `localStorage` / `FormData` 全局对象,Web 生态库(PocketBase JS SDK 等)无法直接运行
+- 提供组装层 + 冲突管理, 拒绝从零造轮子
+- Skyline / WebView 双引擎通用
+- 解决小程序逻辑层无 Web 全局对象, Web 生态库(PocketBase JS SDK 等) 无法直接运行 的问题
 
-## 包矩阵
+## 子 NPM 包列表
 
-| 子路径 | 覆盖 | 依赖引擎 | wx 桥(手写) |
+| 路径 | 覆盖 | 依赖引擎 | wx 桥(手写) |
 |---|---|---|---|
 | `/core` | 运行时检测、AbortError、字节工具 | — | `WxLike` 最小接口(全家族唯一 seam) |
 | `/text-encoding` | `TextEncoder` / `TextDecoder`(UTF-8,流式) | — | WHATWG utf-8 编解码状态机 |
@@ -32,7 +32,8 @@ pnpm add mp-web-polyfill
 
 ## 使用
 
-默认 lite:域名引擎仅 ASCII(小程序合法域名要求 ICP 备案 ASCII 域名),流式用内置最小 ReadableStream。重依赖是独立子路径,按需引入,不进默认模块图。
+默认使用裁剪版(lite), 域名引擎仅 ASCII (小程序合法域名要求 ICP 备案 ASCII 域名), 流式用内置最小 ReadableStream。
+满血版本/较重依赖通过独立子路径按需引入, 不默认加载。
 
 ```ts
 import { fetch, URL } from 'mp-web-polyfill/fetch'
