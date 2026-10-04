@@ -98,7 +98,7 @@
     "url",
     "localstorage"
   ],
-  "license": "MIT",
+  "license": "LGPL-3.0-only",
   "dependencies": {
     "eventsource-parser": "^4.1.1",
     "tr46": "^5.1.1",
