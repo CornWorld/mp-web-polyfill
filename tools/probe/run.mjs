@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
- * C 层探针 runner:驱动微信开发者工具,在真实小程序逻辑层里
- * 复跑与 Node 侧同一语义的检查用例,产出 probe-report.json。
+ * C 层探针 runner。驱动微信开发者工具, 在真实小程序逻辑层里
+ * 复跑与 Node 侧同一语义的检查用例, 产出 probe-report.json。
  *
  * 前置(一次性):
- *   1. 已安装微信开发者工具,并在 设置→安全 开启「服务端口」;
- *   2. DevTools 已登录(登录态持久化,过期重新扫码一次);
+ *   1. 已安装微信开发者工具, 并在 设置→安全 开启「服务端口」
+ *   2. DevTools 已登录(登录态持久化, 过期重新扫码一次)
  *   3. 目标小程序工程已安装 @cornworld/mp-web-runtime 并含探针页
  *      (模板见 tools/probe/probe-page/)。
  *
@@ -27,8 +27,8 @@ function parseArgs(argv) {
   for (let i = 0; i < argv.length; i++) {
     const key = argv[i].replace(/^--/, '')
     const next = argv[i + 1]
-    // 无值 flag(--close/--build-npm):后随 token 以 -- 开头或缺省时按布尔处理,
-    // 否则成对的 key-value 会被 flag 吃掉一个(本次 --pb 被 --build-npm 吞掉,实测)
+    // 无值 flag(--close/--build-npm): 后随 token 以 -- 开头或缺省时按布尔处理,
+    // 否则成对的 key-value 会被 flag 吃掉一个(本次 --pb 被 --build-npm 吞掉, 实测)
     if (next === undefined || next.startsWith('--')) {
       out[key] = true
     } else {
@@ -40,8 +40,8 @@ function parseArgs(argv) {
 }
 
 const args = parseArgs(process.argv.slice(2))
-// env 回退(PROBE_PROJECT/PROBE_PAGE)供 self-hosted runner 的 schedule 触发使用:
-// 定时任务无法携带 inputs,runner 侧配置环境变量即可指向目标小程序工程。
+// env 回退(PROBE_PROJECT/PROBE_PAGE)供 self-hosted runner 的 schedule 触发使用。
+// 定时任务无法携带 inputs, runner 侧配置环境变量即可指向目标小程序工程。
 const projectPath = resolve(args.project ?? process.env.PROBE_PROJECT ?? '.')
 const pagePath = args.page ?? process.env.PROBE_PAGE ?? 'pages/probe/index'
 const cliPath = args.cli ?? '/Applications/wechatwebdevtools.app/Contents/MacOS/cli'
@@ -49,17 +49,17 @@ const reportFile = args.report ?? 'probe-report.json'
 const wsPort = args.ws ?? '9420'
 const closeAfterRun = process.argv.includes('--close')
 const npmBuild = process.argv.includes('--build-npm')
-// --fresh:先 cli quit 再 launch —— 代码变更后常驻实例可能卡在半编译态
-// (实测重编译 × 导航竞速可致页面崩、契约不注册),CI/构建后必用。
+// --fresh: 先 cli quit 再 launch。代码变更后常驻实例可能卡在半编译态
+// (实测重编译 × 导航竞速可致页面崩、契约不注册), CI/构建后必用。
 const freshSession = process.argv.includes('--fresh')
-// --pb <base>:透传给探针页,启用「包装 SDK 全链路 demo」检查组
+// --pb <base>: 透传给探针页, 启用「包装 SDK 全链路 demo」检查组
 // (如 Docker PB:http://127.0.0.1:8091)
 const demoPbBase = args.pb
 
 /**
- * 会话获取:优先 connect 到常驻实例 —— 复用已打开的开发者工具,全程零弹窗;
- * 连不上才 launch(本机仅此一次开窗,之后 disconnect 保留实例供下次复用)。
- * Docker 方案不可行:官方无 Linux 版 DevTools,非官方 wine/移植链路脆弱,
+ * 会话获取: 优先 connect 到常驻实例, 复用已打开的开发者工具, 全程零弹窗。
+ * 连不上才 launch(本机仅此一次开窗, 之后 disconnect 保留实例供下次复用)。
+ * Docker 方案不可行: 官方无 Linux 版 DevTools, 非官方 wine/移植链路脆弱,
  * 常驻实例 + connect 是官方推荐的无扰形态。
  */
 async function openSession() {
@@ -82,16 +82,16 @@ async function openSession() {
 }
 
 /**
- * DevTools npm 构建(miniprogram_npm)。DevTools 是单实例架构:cli build-npm
- * 会路由进已运行实例 —— 因此必须在会话建立之后调用(先 build-npm 后 launch
- * 会因实例已占服务端口而 launch 失败);也绝不能 pkill "清理",那杀的是同一
- * 个常驻实例。构建触发重编译,随后的页面导航即加载新 bundle。
+ * DevTools npm 构建(miniprogram_npm)。DevTools 是单实例架构, cli build-npm
+ * 会路由进已运行实例, 因此必须在会话建立之后调用(先 build-npm 后 launch
+ * 会因实例已占服务端口而 launch 失败)。也绝不能 pkill "清理", 那杀的是同一
+ * 个常驻实例。构建触发重编译, 随后的页面导航即加载新 bundle。
  */
 async function buildNpmInSession() {
   if (!npmBuild) return
   console.log('DevTools npm 构建(路由进当前实例)…')
-  // 成败以进程退出码为准(execFileAsync 非零退出会 reject);stdout 是
-  // { cost, warnings } 形态的 JSON,没有 code 字段
+  // 成败以进程退出码为准(execFileAsync 非零退出会 reject)。stdout 是
+  // { cost, warnings } 形态的 JSON, 没有 code 字段
   const { stdout } = await execFileAsync(cliPath, ['build-npm', '--project', projectPath], {
     timeout: 120_000,
   })
@@ -148,12 +148,12 @@ async function main() {
   try {
     await buildNpmInSession()
     if (npmBuild) {
-      // npm 构建触发 DevTools 重编译:立即导航会与重编译竞速,
+      // npm 构建触发 DevTools 重编译, 立即导航会与重编译竞速,
       // evaluate 通道在重编译窗口内会静默挂起(实测两轮复现)
       await new Promise((r) => setTimeout(r, 4000))
     }
-    // 注意:automator 的 reLaunch/currentPage 在 Skyline 工程上不可靠
-    // (reLaunch 谎报 ok 但页面栈不动,currentPage 取到旧页),
+    // 注意: automator 的 reLaunch/currentPage 在 Skyline 工程上不可靠
+    // (reLaunch 谎报 ok 但页面栈不动, currentPage 取到旧页),
     // 改用 evaluate 注入 wx.navigateTo(实测可用)。
     const navToProbePage = () =>
       miniProgram.evaluate(
@@ -169,10 +169,10 @@ async function main() {
                 resolve(`navigateTo threw: ${err}`)
               }
             }
-            // 常驻会话多轮复用:navigateTo 持续压栈(上限 10 层),
-            // 先退回栈底再进页;reLaunch 在 Skyline 工程上谎报成功,不可用。
+            // 常驻会话多轮复用: navigateTo 持续压栈(上限 10 层),
+            // 先退回栈底再进页。reLaunch 在 Skyline 工程上谎报成功, 不可用。
             // 退栈后必须等转场完成再进页(在 complete 里链式发起会因
-            // 转场中的同步异常吞掉 resolve,导致 evaluate 永久 pending)。
+            // 转场中的同步异常吞掉 resolve, 导致 evaluate 永久 pending)。
             const depth = globalThis.getCurrentPages().length
             if (depth > 1) {
               globalThis.wx.navigateBack({ delta: depth - 1 })
@@ -194,9 +194,9 @@ async function main() {
     if (navErr) throw new Error(`探针页导航失败:${navErr}`)
     await new Promise((r) => setTimeout(r, 1500)) // 等探针页完成安装与自检
 
-    // 探针页契约可能因「重编译 × 导航」竞速而未注册(页面崩在半编译状态):
-    // 对未注册整轮重进页面(栈重置导航),最多 3 次;检查渐进追加(demo 组含
-    // 网络往返),每轮轮询至条数稳定再判定。
+    // 探针页契约可能因「重编译 × 导航」竞速而未注册(页面崩在半编译状态)。
+    // 对未注册整轮重进页面(栈重置导航), 最多 3 次。检查渐进追加(demo 组含
+    // 网络往返), 每轮轮询至条数稳定再判定。
     const readProbe = () =>
       miniProgram.evaluate(
         () => globalThis.__mpProbeRun?.() ?? { error: '探针页未注册 __mpProbeRun' },
@@ -301,10 +301,10 @@ async function main() {
       return { checks }
     }, origin)
 
-    // 确定性罐头传输检查:evaluate 注入「函数体接管」式 wx.request mock,
+    // 确定性罐头传输检查: evaluate 注入「函数体接管」式 wx.request mock,
     // 在官方逻辑层运行时里复放真 HTTP 无法稳定构造的时序
     // (字节级 chunk 截断 / mid-stream abort / 非 2xx 空 body / SSE 跨 chunk 断字)。
-    // 语义与 automator mockWxMethod 的「返回值替换」不同:此处完全由罐头函数
+    // 语义与 automator mockWxMethod 的「返回值替换」不同, 此处完全由罐头函数
     // 自行驱动 onHeadersReceived/onChunkReceived/success/fail 的次数与时序。
     const hijackResult = await miniProgram.evaluate(async () => {
       const checks = []

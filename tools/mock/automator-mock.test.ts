@@ -9,8 +9,8 @@ import { requestInterceptor } from './automator-mock.mjs'
  *   - 返回 {errMsg} → 调用方 fail
  *   - 返回 Promise → resolve 值生效(延迟罐头/放行代理都靠它)
  *   - 返回 undefined → 调用方死等(实现里任何路径都不得出现)
- * fn 经 fn.toString() 序列化进 AppService,自由变量在那里不存在——
- * 先用 new Function 复刻「脱作用域求值」,任何自由变量都会 ReferenceError 暴露。
+ * fn 经 fn.toString() 序列化进 AppService, 自由变量在那里不存在。
+ * 先用 new Function 复刻「脱作用域求值」, 任何自由变量都会 ReferenceError 暴露。
  */
 const deserialized = new Function(
   `return (${requestInterceptor.toString()})`,

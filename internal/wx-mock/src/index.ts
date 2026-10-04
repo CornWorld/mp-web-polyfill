@@ -51,9 +51,9 @@ function flattenHeaders(headers: IncomingMessage['headers']): Record<string, str
 }
 
 /**
- * 响应头还原:按 rawHeaders 保留服务端原始大小写(真机 onHeadersReceived
- * 的实测形态;Node 的 res.headers 会小写化,不能用于模拟)。
- * 多值 header 以逗号合并,与真机返回形态一致。
+ * 响应头还原: 按 rawHeaders 保留服务端原始大小写(真机 onHeadersReceived
+ * 的实测形态, Node 的 res.headers 会小写化, 不能用于模拟)。
+ * 多值 header 以逗号合并, 与真机返回形态一致。
  */
 function headersFromRaw(rawHeaders: string[]): Record<string, string> {
   const out: Record<string, string> = {}
@@ -273,8 +273,8 @@ function createUploadFileMock(ctx: { origin: string; requests: CapturedRequest[]
 
 /**
  * 基于 Node http 的 wx.request 模拟宿主。
- * enableChunked 时逐块回调 onChunkReceived(与真机一致,data 为 ArrayBuffer),
- * 非 chunked 只在 success 给全量 data —— 与真实小程序行为差异一致。
+ * enableChunked 时逐块回调 onChunkReceived(与真机一致, data 为 ArrayBuffer),
+ * 非 chunked 只在 success 给全量 data, 与真实小程序行为差异一致。
  */
 export async function startWxMock(options: WxMockOptions = {}): Promise<WxMock> {
   const requests: CapturedRequest[] = []

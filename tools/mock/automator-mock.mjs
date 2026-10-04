@@ -1,33 +1,33 @@
 #!/usr/bin/env node
 /**
- * 业务打桩 mock 桥(C 层工具,官方 automator 驱动,与 minium 同一 DevTools 协议)。
+ * 业务打桩 mock 桥(C 层工具, 官方 automator 驱动, 与 minium 同一 DevTools 协议)。
  *
- * 用途:UI 开发/测试时在自动化会话内按 URL 拦截 wx.request,返回罐头数据;
+ * 用途: UI 开发/测试时在自动化会话内按 URL 拦截 wx.request, 返回罐头数据。
  * 未命中的请求经 this.origin 放行(真实网络)。
  *
  * 能力边界(automator 0.12.1 + DevTools 2.06 实测结论):
- * - ✅ 按 URL 路由罐头 success/fail(automator.mockWxMethod;minium 的 mock_wx_method 同为结果替换,官方文档无函数体形式)
- * - ✅ 函数形式动态路由(fn 序列化进 AppService,无闭包;this.origin 可调原始方法)
- * - ✅ 放行未命中请求(this.origin 真发请求,但结果须 Promise 代理,见下方语义)
+ * - ✅ 按 URL 路由罐头 success/fail(automator.mockWxMethod, minium 的 mock_wx_method 同为结果替换, 官方文档无函数体形式)
+ * - ✅ 函数形式动态路由(fn 序列化进 AppService, 无闭包, this.origin 可调原始方法)
+ * - ✅ 放行未命中请求(this.origin 真发请求, 但结果须 Promise 代理, 见下方语义)
  * - ✅ --delay 延迟罐头(mock 返回值支持 Promise)
- * - ❌ 流式/enableChunked 多次 onChunkReceived(罐头无流;真流式用真 PB 或 wx-mock)
- * - ❌ 无 DevTools 的 CI(需登录态;CI 用 @cornworld/wx-mock)
+ * - ❌ 流式/enableChunked 多次 onChunkReceived(罐头无流, 真流式用真 PB 或 wx-mock)
+ * - ❌ 无 DevTools 的 CI(需登录态, CI 用 @cornworld/wx-mock)
  *
- * 用法:先手开微信开发者工具(登录态)并开启服务端口,然后:
+ * 用法: 先手开微信开发者工具(登录态)并开启服务端口, 然后:
  *   node tools/mock/automator-mock.mjs --project <小程序工程> \
  *     --routes <routes.json> [--cli <devtools cli>] [--port 9420] [--delay 300]
  *
- * mock 函数调用语义(DevTools 内置 App.mockWxMethod 实测,2026-10-03):
+ * mock 函数调用语义(DevTools 内置 App.mockWxMethod 实测, 2026-10-03):
  *   fn.apply({ origin }, [options, ...mockWxMethod 尾参])
- *   结果通路是「返回值替换」(minium 的 mock_wx_method 官方文档同为结果替换;真函数体接管走 evaluate 注入,见 tools/probe 的 hijack 检查):
+ *   结果通路是「返回值替换」(minium 的 mock_wx_method 官方文档同为结果替换, 真函数体接管走 evaluate 注入, 见 tools/probe 的 hijack 检查):
  *   - 返回 {statusCode,data,header} → 调用方 success(该对象)
  *   - 返回 {errMsg} → 调用方 fail(该对象)
  *   - 返回 Promise → resolve 值按上述规则(延迟罐头靠这个)
- *   - 返回 undefined → 调用方回调永不触发(死等,禁止)
- *   - this.origin(options) 真发请求,但其结果不会自动回到调用方:
- *     放行必须 new Promise(...) 包 origin,把真实 success/fail resolve 回去
- *   因此 fn 必须是函数本体(自由变量序列化后在 AppService 不存在),签名为
- *   (options, routes, delay),不能用闭包工厂的返回值。
+ *   - 返回 undefined → 调用方回调永不触发(死等, 禁止)
+ *   - this.origin(options) 真发请求, 但其结果不会自动回到调用方,
+ *     放行必须 new Promise(...) 包 origin, 把真实 success/fail resolve 回去
+ *   因此 fn 必须是函数本体(自由变量序列化后在 AppService 不存在), 签名为
+ *   (options, routes, delay), 不能用闭包工厂的返回值。
  *
  * routes.json 形如:
  * {
@@ -82,14 +82,14 @@ async function main() {
   })
 }
 
-// 直接以 CLI 运行时才连接 DevTools;被测试 import 时不产生副作用
+// 直接以 CLI 运行时才连接 DevTools, 被测试 import 时不产生副作用
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   await main()
 }
 
 /**
- * 序列化进 AppService 的拦截函数(不能用闭包):routes/delay 由 mockWxMethod
- * 尾参注入(见文件头调用语义)。命中 → 返回罐头对象/延迟 Promise;未命中 →
+ * 序列化进 AppService 的拦截函数(不能用闭包), routes/delay 由 mockWxMethod
+ * 尾参注入(见文件头调用语义)。命中 → 返回罐头对象/延迟 Promise, 未命中 →
  * Promise 代理 this.origin 的真实结果(DevTools 内置 mock 不回传 origin 回调)。
  */
 function requestInterceptor(options, routes, delay) {
