@@ -14,8 +14,8 @@ name: Probe(小程序真机/DevTools 一致性探针)
 #   PROBE_PAGE)环境变量指向本地小程序工程绝对路径,两者皆缺时中性跳过。
 #
 # checkout 布局刻意复刻 jgst 的 link: 相对路径(miniapp/package.json 的
-# link:../../cornworld-miniprogram-polyfill):
-#   $WORKSPACE/cornworld-miniprogram-polyfill   ← 本仓库(或 workflow_call 调用方指定的 ref)
+# link:../../mp-web-polyfill):
+#   $WORKSPACE/mp-web-polyfill   ← 本仓库(或 workflow_call 调用方指定的 ref)
 #   $WORKSPACE/<project-repository>/miniapp     ← 宿主工程
 # 真机接入位:检查全部经探针页契约(__mpProbeRun)与 evaluate 注入执行,
 # 控制通道与页面解耦 —— 换真机通道(minium 真机调试)时 runner 适配层替换,
@@ -94,7 +94,7 @@ jobs:
         if: steps.src.outputs.mode != 'skip'
         uses: actions/checkout@v4
         with:
-          path: cornworld-miniprogram-polyfill
+          path: mp-web-polyfill
 
       - name: Checkout 宿主仓库
         if: steps.src.outputs.mode == 'repo'
@@ -114,14 +114,14 @@ jobs:
       - uses: actions/setup-node@v4
         if: steps.src.outputs.mode != 'skip'
         with:
-          node-version-file: cornworld-miniprogram-polyfill/.nvmrc
+          node-version-file: mp-web-polyfill/.nvmrc
           cache: pnpm
-          cache-dependency-path: cornworld-miniprogram-polyfill/pnpm-lock.yaml
+          cache-dependency-path: mp-web-polyfill/pnpm-lock.yaml
 
       - name: 安装依赖并构建 polyfill(PR/指定 ref 代码)
         if: steps.src.outputs.mode != 'skip'
         run: |
-          cd cornworld-miniprogram-polyfill
+          cd mp-web-polyfill
           pnpm install --frozen-lockfile
           pnpm build
 
@@ -148,7 +148,7 @@ jobs:
           else
             project="${{ steps.src.outputs.path }}"
           fi
-          cd cornworld-miniprogram-polyfill
+          cd mp-web-polyfill
           node tools/probe/run.mjs \
             --project "$project" \
             --page "${{ inputs.probe-page || env.PROBE_PAGE || 'pages/probe/probe' }}" \
@@ -161,5 +161,5 @@ jobs:
         if: always()
         with:
           name: probe-report
-          path: cornworld-miniprogram-polyfill/probe-report.json
+          path: mp-web-polyfill/probe-report.json
           if-no-files-found: warn

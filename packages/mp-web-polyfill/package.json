@@ -87,7 +87,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/cornworld/cornworld-miniprogram-polyfill.git"
+    "url": "git+https://github.com/CornWorld/mp-web-polyfill.git"
   },
   "keywords": [
     "weapp",

@@ -23,7 +23,7 @@ const SPECIAL = /^https?:/i // 只保留 http/https:传输桥与 EventSource 的
 async function main() {
   process.stdout.write('解析 WPT 最新 commit…\n')
   const commitRes = await fetch(`https://api.github.com/repos/${REPO}/commits/master`, {
-    headers: { 'user-agent': 'cornworld-miniprogram-polyfill' },
+    headers: { 'user-agent': 'mp-web-polyfill' },
   })
   if (!commitRes.ok) throw new Error(`GitHub API ${commitRes.status}`)
   const { sha } = /** @type {{ sha: string }} */ (await commitRes.json())
