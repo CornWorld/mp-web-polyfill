@@ -9,18 +9,18 @@
 
 ## 包矩阵
 
-| 包                              | 覆盖                                                                                            | 规约引擎(依赖)                                                                                                                                                    | 手写部分(wx 桥)                                                  |
-| ------------------------------- | ----------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| `mp-web-polyfill/core`          | 运行时检测、AbortError、字节工具                                                                | —                                                                                                                                                                 | `WxLike` 最小接口(全家族唯一 seam)                               |
-| `mp-web-polyfill/text-encoding` | `TextEncoder` / `TextDecoder`(UTF-8,流式)                                                       | —(现有实现要么失修要么含全部遗留编码太重,故自写)                                                                                                                  | WHATWG utf-8 编解码状态机                                        |
-| `mp-web-polyfill/url`           | `URL` / `URLSearchParams` / `canParse` / `parse`                                                | `whatwg-url` **纯状态机深路径**(`lib/url-state-machine` + `lib/urlencoded`;主入口 webidl2js 包装层运行时需 eval,小程序逻辑层没有,不可用——2026-10-03 真机实测修复) | 薄包装 + canParse/parse 增补、URLSearchParams 规范类(纯函数引擎) |
-| `mp-web-polyfill/fetch`         | `fetch` / `Request` / `Response` / `Headers` / `AbortController` / `Blob` / `File` / `FormData` | 流式:`web-streams-polyfill`(随包依赖,可注入降级)                                                                                                                  | `wx.request` 传输桥、multipart 序列化、Abort 实现                |
-| `mp-web-polyfill/eventsource`   | `EventSource`(SSE)                                                                              | `eventsource-parser`(线格式解析)                                                                                                                                  | `wx.request enableChunked` 传输、重连状态机、MIME 门控           |
-| `mp-web-polyfill/storage`       | `localStorage`                                                                                  | —                                                                                                                                                                 | `wx.setStorageSync` 桥、配额错误映射                             |
-| `mp-web-polyfill/installer`     | 一站式 API 级安装器(原 mp-web-runtime)                                                          | `web-streams-polyfill`                                                                                                                                            | 冲突检测 / 标记 / 诊断                                           |
-| `@cornworld/wx-mock`(internal)  | 测试专用模拟宿主                                                                                | —                                                                                                                                                                 | Node http 版 `wx.request` / storage                              |
+| 包                              | 覆盖                                                                                            | 规约引擎(依赖)                                                                                                                                                                                                                                                                                                                           | 手写部分(wx 桥)                                                  |
+| ------------------------------- | ----------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `mp-web-polyfill/core`          | 运行时检测、AbortError、字节工具                                                                | —                                                                                                                                                                                                                                                                                                                                        | `WxLike` 最小接口(全家族唯一 seam)                               |
+| `mp-web-polyfill/text-encoding` | `TextEncoder` / `TextDecoder`(UTF-8,流式)                                                       | —(现有实现要么失修要么含全部遗留编码太重,故自写)                                                                                                                                                                                                                                                                                         | WHATWG utf-8 编解码状态机                                        |
+| `mp-web-polyfill/url`           | `URL` / `URLSearchParams` / `canParse` / `parse`                                                | `whatwg-url` **纯状态机已 vendor 进仓库**(`src/url/engine/`,CJS→ESM 机械转换;主入口 webidl2js 包装层运行时需 eval,小程序逻辑层没有,不可用)。域名转 ASCII 走**可注入引擎**:默认 lite(仅 ASCII,小程序合法域名硬性要求 ICP 备案 ASCII 域名),完整 IDNA(UTS46/tr46,~213KB 数据表)经 `./url/idna` 子路径按需 import,独立 bundle 不进默认模块图 | 薄包装 + canParse/parse 增补、URLSearchParams 规范类(纯函数引擎) |
+| `mp-web-polyfill/fetch`         | `fetch` / `Request` / `Response` / `Headers` / `AbortController` / `Blob` / `File` / `FormData` | 流式:内置**最小 ReadableStream** 默认(仅 reader 消费面,~2KB);完整 WHATWG Streams(web-streams-polyfill,~62KB)经 `./streams/full` 按需注入,独立 bundle 不进默认模块图                                                                                                                                                                      | `wx.request` 传输桥、multipart 序列化、Abort 实现                |
+| `mp-web-polyfill/eventsource`   | `EventSource`(SSE)                                                                              | `eventsource-parser`(线格式解析)                                                                                                                                                                                                                                                                                                         | `wx.request enableChunked` 传输、重连状态机、MIME 门控           |
+| `mp-web-polyfill/storage`       | `localStorage`                                                                                  | —                                                                                                                                                                                                                                                                                                                                        | `wx.setStorageSync` 桥、配额错误映射                             |
+| `mp-web-polyfill/installer`     | 一站式 API 级安装器(原 mp-web-runtime)                                                          | `web-streams-polyfill`                                                                                                                                                                                                                                                                                                                   | 冲突检测 / 标记 / 诊断                                           |
+| `@cornworld/wx-mock`(internal)  | 测试专用模拟宿主                                                                                | —                                                                                                                                                                                                                                                                                                                                        | Node http 版 `wx.request` / storage                              |
 
-> 包名 `mp-web-polyfill`(无 scope,npm 已验空闲;`mp-polyfill` 曾被 unpublish 不可注册)。单包多出口:上表每行是一个子路径,同版本线整体演进;internal 的 `@cornworld/wx-mock` 不发布。
+> 包名 `mp-web-polyfill`(无 scope,npm 已验空闲;`mp-polyfill` 曾被 unpublish 不可注册)。单包多出口:上表每行是一个子路径,同版本线整体演进;internal 的 `@cornworld/wx-mock` 不发布。产物为**一线路形态**:tsup 以唯一聚合入口(src/index.ts)构建,每格式(esm/cjs)一个真 bundle,所有子路径出口的 import/require 指向同一份产物(types 仍按子路径由 tsc 产出)—— 任何消费组合下全局只有一份类与单例,跨入口 `instanceof` / 单例一致性由产物结构保证(CJS 多入口构建会把共享模块内联成副本,esbuild/rollup 均不支持 cjs 共享 chunk)。
 
 ## 测试边界(本仓库的宪法)
 
@@ -44,7 +44,7 @@ flowchart LR
 | ----------------------------------------------------------- | ---- | -------------------------- | ----------------------------- | ------------------------------------------- |
 | `pnpm test`                                                 | A+B  | Node(vitest)               | 测试文件内,红即失败           | 本地每次改动 + PR CI(ci.yml)                |
 | `pnpm sync:wpt`                                             | 语料 | 网络                       | 不断言,只刷新 fixture + pin   | 引擎/WPT 升级时手动                         |
-| `node tools/probe/run.mjs --project …`                      | C    | DevTools / 真机(automator) | runner 汇总 checks,非零退出码 | probe.yml 每日 05:05 / 手动 / workflow_call |
+| `node tools/probe/run.mjs --project …`                      | C    | DevTools / 真机(automator) | runner 汇总 checks,非零退出码 | probe.yml 每日 05:00 / 手动 / workflow_call |
 | `node tools/mock/automator-mock.mjs --project … --routes …` | 打桩 | DevTools 自动化会话        | 无断言(开发辅助)              | UI 开发时手动                               |
 
 语料单币种:URL 一致性只有 `wpt-urltests.json`(sync-wpt 生成,pin 门禁在 wpt-corpus.test.ts);上游语料覆盖不到的语义(RFC 3986 相对解析段、显式/空端口、路径 %20/%2F 正例)以类型化内联用例放在 url.test.ts,不落第二份 JSON。
@@ -68,11 +68,28 @@ flowchart LR
 | T3 全量一致性 | `whatwg-url`                                                        | WPT `urltestdata.json` 全量(483 例 http/https)数据驱动 + **已知偏差基线升级门**:`pnpm sync:wpt` 钉 commit,引擎升级重跑,新偏差红灯、偏差消失也红灯 | WPT 官方       |
 | T4 全测       | 自研(codec / abort / headers / form-data / multipart / 桥 / 状态机) | 单测 + fixture 全覆盖                                                                                                                             | 自写(移植 WPT) |
 
-已知偏差基线见 `packages/mp-url/test/fixtures/wpt-known-failures.json`(当前 7 条,全部是 IDNA/punycode 域名校验类规约收紧项,与小程序 API 域名场景无关)。刷新基线:
+已知偏差基线见 `packages/mp-web-polyfill/test/url/fixtures/wpt-known-failures.json`(当前 9 条,全部是 **lite 域名引擎**对非 ASCII 域名判失败的用例 —— 小程序合法域名硬性要求 ICP 备案 ASCII 域名,该默认在本环境无语义损失;完整 IDNA 见下方开关)。另有 **7 条 tr46 引擎级偏差**(WPT 已放宽 invalid-punycode 主机校验而 tr46 仍判失败,与上游 whatwg-url@14.2.0 完全一致)显式记录于 `test/url/idna.test.ts`。刷新基线:
 
 ```bash
-UPDATE_URL_BASELINE=1 pnpm vitest run packages/mp-url
+UPDATE_URL_BASELINE=1 pnpm vitest run packages/mp-web-polyfill/test/url/wpt-corpus.test.ts
 ```
+
+### 按需增强开关(lite / 最小实现默认,重引擎按需 import)
+
+```ts
+// 默认:lite 域名引擎(仅 ASCII)+ 内置最小 ReadableStream(仅 reader 消费面)
+import { fetch, URL } from 'mp-web-polyfill/fetch'
+
+// 需要完整 IDNA(非 ASCII 域名 → punycode)时(独立 bundle,幂等):
+import 'mp-web-polyfill/url/idna'
+
+// 需要完整 Streams 规范(tee / pipeTo / 背压…)时(独立 bundle,幂等):
+import 'mp-web-polyfill/streams/full'
+
+new URL('http://www.bücher.de/').host // 装 idna 后:www.xn--bcher-kva.de
+```
+
+体积效果:全量 installer bundle(含全部依赖)351KB → **49KB** min(92KB → 15KB gzip)。两个重依赖已移出默认模块图:tr46 的 UTS46 数据表、web-streams-polyfill。vendor 区(`src/url/engine/`)正确性由 WPT 全量语料门禁守护,升级引擎 = 重新 vendor + 重跑语料。
 
 **不测什么(C 层边界)**:CORS / 凭据 / 手动重定向语义(小程序无 CORS,wx 自动跟随重定向,文档化 non-goal);不重测引擎内部(T1–T3 已覆盖我们的暴露面);真机不进 CI(automator 需 DevTools 登录态,PR CI 养不起,改为 nightly + self-hosted)。
 
@@ -162,7 +179,7 @@ node tools/probe/run.mjs --project <工程> --page pages/probe/probe \
 
 ```bash
 pnpm test          # vitest 全量(A+B 层)
-pnpm build         # tsup 双格式(esm/cjs)
+pnpm build         # tsup 双格式(esm/cjs)+ tsc 产子路径 d.ts
 pnpm typecheck     # tsc -b(project references)
 pnpm lint          # eslint flat
 pnpm sync:wpt      # 拉取 WPT urltestdata.json(钉 commit)→ 刷新 T3 语料
