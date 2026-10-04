@@ -1,10 +1,10 @@
 import * as fetchPkg from '../fetch'
 import { setReadableStreamClass } from '../fetch'
+import { MinimalReadableStream } from '../fetch/minimal-streams'
 import { TextDecoder, TextEncoder } from '../text-encoding'
 import { URL, URLSearchParams } from '../url'
 import { EventSource } from '../eventsource'
 import { localStorage } from '../storage'
-import { ReadableStream } from 'web-streams-polyfill'
 
 export const POLYFILL_MARKER = Symbol.for('cornworld.mp-polyfill')
 
@@ -44,7 +44,8 @@ const PROVIDERS: Record<RuntimeTarget, () => unknown> = {
   URLSearchParams: () => URLSearchParams,
   EventSource: () => EventSource,
   localStorage: () => localStorage,
-  ReadableStream: () => ReadableStream,
+  // 最小流实现(仅 reader 消费面):完整 Streams 规范按需经 ./streams/full
+  ReadableStream: () => MinimalReadableStream,
 }
 
 export type GlobalSource = 'ours' | 'host' | 'absent'
@@ -87,7 +88,7 @@ function markAsOurs(value: unknown): void {
  * - 安装 ReadableStream 后自动接到 fetch 的流式通道。
  */
 export function installWebRuntimeGlobals(options: InstallOptions = {}): InstallReport {
-  const targets = options.targets ?? (Object.keys(PROVIDERS) as RuntimeTarget[])
+  const targets = [...new Set(options.targets ?? (Object.keys(PROVIDERS) as RuntimeTarget[]))]
   const report: InstallReport = { installed: [], skipped: [], replaced: [] }
   const globals = globalThis as unknown as Record<string, unknown>
 
@@ -108,8 +109,11 @@ export function installWebRuntimeGlobals(options: InstallOptions = {}): InstallR
     globals[target] = value
   }
 
-  if (sourceOf(globals.ReadableStream) === 'ours') {
-    setReadableStreamClass(globals.ReadableStream as Parameters<typeof setReadableStreamClass>[0])
+  // 流式通道接线:无论 ReadableStream 是我们装的还是宿主/第三方提供的
+  // (后者常见于 fetch 模块先装载、宿主流实现后出现的时序),只要存在就接通
+  const readableStream = globals.ReadableStream
+  if (readableStream !== undefined && readableStream !== null) {
+    setReadableStreamClass(readableStream as Parameters<typeof setReadableStreamClass>[0])
   }
   return report
 }

@@ -64,9 +64,23 @@ describe('installWebRuntimeGlobals(API 级安装器)', () => {
     expect(g.Headers).toBeUndefined()
   })
 
+  it('targets 重复项去重,不重复上报', () => {
+    const report = installWebRuntimeGlobals({ targets: ['URL', 'URL'] })
+    expect(report.installed).toEqual(['URL'])
+  })
+
   it('安装 ReadableStream 后自动接通 fetch 流式通道', () => {
     expect(isStreamingSupported()).toBe(false)
     installWebRuntimeGlobals({ targets: ['ReadableStream'] })
+    expect(isStreamingSupported()).toBe(true)
+  })
+
+  it('宿主已有 ReadableStream 同样接通流式通道(不强制 ours 来源)', () => {
+    // 空构造即可:接线只注册类引用,不实例化
+    class FakeReadableStream {}
+    g.ReadableStream = FakeReadableStream
+    const report = installWebRuntimeGlobals({ targets: ['ReadableStream'] })
+    expect(report.skipped).toEqual(['ReadableStream'])
     expect(isStreamingSupported()).toBe(true)
   })
 
