@@ -12,7 +12,7 @@
   },
   "include": [
     "packages/mp-web-polyfill/test/**/*.ts",
-    "packages/mp-web-polyfill/tsup.config.ts",
+    "packages/mp-web-polyfill/vite.config.ts",
     "packages/mp-web-polyfill/src/**/*.d.ts",
     "internal/**/*.ts",
     "tools/mock/*.ts",

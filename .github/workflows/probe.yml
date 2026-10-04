@@ -92,13 +92,13 @@ jobs:
 
       - name: 'Checkout 本仓库(布局对齐 link: 相对路径)'
         if: steps.src.outputs.mode != 'skip'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: mp-web-polyfill
 
       - name: Checkout 宿主仓库
         if: steps.src.outputs.mode == 'repo'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: ${{ inputs.project-repository }}
           ref: ${{ inputs.project-ref || 'main' }}

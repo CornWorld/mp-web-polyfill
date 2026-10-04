@@ -50,7 +50,7 @@ function getHeader(headers: Record<string, string>, name: string): string {
  * 与规范偏差:无 CORS/凭据语义(小程序无 CORS),重连遵循 retry 且不设次数上限。
  */
 export class EventSource {
-  // 静态常量用 getter 而非静态字段:tsup target < es2022 时静态字段会被
+  // 静态常量用 getter 而非静态字段:vite(esbuild) target < es2022 时静态字段会被
   // 展开成模块顶层的属性赋值语句(不纯),把整个类连同其引用链
   // (URL/whatwg-url/eventsource-parser)钉死在每个消费方 bundle 里,
   // 摇树失效(2026-10-04 探针实测)。getter 留在类体内可随类摇掉。
