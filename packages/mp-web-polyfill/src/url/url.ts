@@ -1,6 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/triple-slash-reference -- ambient 深路径模块声明只能经三斜线引用拉进 program(消费方按 src 编译时也生效)
-/// <reference path="./engine.d.ts" />
-
 import {
   basicURLParse,
   cannotHaveAUsernamePasswordPort,
@@ -12,7 +9,7 @@ import {
   serializeURLOrigin,
   setThePassword,
   setTheUsername,
-} from 'whatwg-url/lib/url-state-machine.js'
+} from './engine/url-state-machine.js'
 import type { URLRecord } from './engine-types'
 
 import { bindURLSearchParams } from './search-params'
@@ -22,7 +19,9 @@ export { URLSearchParams } from './search-params'
 
 /**
  * WHATWG URL 包装(引擎:whatwg-url 的 url-state-machine 纯状态机,
- * jsdom/Node 同源实现,WPT 一致性)。
+ * jsdom/Node 同源实现,已 vendor 进本仓库 —— src/url/engine/,WPT 全量
+ * 语料门禁守护;域名转 ASCII 经可注入缝:默认 lite 引擎(仅 ASCII,
+ * 小程序合法域名硬约束),完整 IDNA 经 ./url/idna 按需安装)。
  *
  * 刻意不走 whatwg-url 主入口的 URL/URLSearchParams 包装类:那一层由
  * webidl2js 在运行时生成(需要 eval),小程序逻辑层没有 eval;且经消费方
@@ -35,7 +34,7 @@ export class URL {
   #searchParams: URLSearchParams | null = null
 
   constructor(url: string | URL, base?: string | URL) {
-    const input = url instanceof URL ? url.href : url
+    const input = url instanceof URL ? url.href : String(url)
     // 显式传入的 undefined/null base 按参数缺省处理(与旧包装一致)
     let parsedBase: URLRecord | null = null
     if (base !== undefined && base !== null) {
@@ -47,16 +46,18 @@ export class URL {
     this.#record = parsed
   }
 
-  static canParse(url: string, base?: string): boolean {
+  /** 规范 canParse:url/base 先做 USVString 化(URL 实例按 href 展开),解析失败即 false。 */
+  static canParse(url: string | URL, base?: string | URL): boolean {
     let parsedBase: URLRecord | null = null
-    if (base !== undefined) {
-      parsedBase = basicURLParse(base)
+    if (base !== undefined && base !== null) {
+      parsedBase = basicURLParse(base instanceof URL ? base.href : String(base))
       if (parsedBase === null) return false
     }
-    return basicURLParse(url, { baseURL: parsedBase }) !== null
+    const input = url instanceof URL ? url.href : String(url)
+    return basicURLParse(input, { baseURL: parsedBase }) !== null
   }
 
-  static parse(url: string, base?: string): URL | null {
+  static parse(url: string | URL, base?: string | URL): URL | null {
     try {
       return new URL(url, base)
     } catch {
@@ -198,8 +199,8 @@ export class URL {
     return this.href
   }
 
-  /** URL 层变更 query 后,重同步已创建的 searchParams 镜像。 */
+  /** URL 层变更 record 后,重同步已创建的 searchParams 镜像(含重绑到新 record)。 */
   #resyncSearchParams(): void {
-    this.#searchParams?.resyncFromQuery(this.#record.query)
+    this.#searchParams?.resyncFromRecord(this.#record)
   }
 }

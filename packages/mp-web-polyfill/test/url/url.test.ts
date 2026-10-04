@@ -141,6 +141,32 @@ describe('URL(WPT 移植用例,引擎 whatwg-url)', () => {
     expect(URL.parse('http://example.com/x')?.pathname).toBe('/x')
   })
 
+  it('canParse / parse 接受 URL 实例作为 url 与 base(USVString 化)', () => {
+    const base = new URL('http://example.com/dir/index.html')
+    expect(URL.canParse('page', base)).toBe(true)
+    expect(URL.canParse(new URL('http://example.com/'))).toBe(true)
+    // 相对路径按 base 目录解析;绝对路径(/x)替换整个 path,与 Node 内建一致
+    expect(URL.parse('page', base)?.href).toBe('http://example.com/dir/page')
+    expect(URL.parse('/x', base)?.href).toBe('http://example.com/x')
+    expect(URL.parse('http://[:::1]/')).toBeNull()
+  })
+
+  it('href 重写后 searchParams 重绑到新 record(写穿透不脱钩)', () => {
+    const u = new URL('http://example.com/?y=2')
+    const sp = u.searchParams
+    u.href = 'http://example.com/?y=2'
+    sp.append('z', '3')
+    expect(sp.toString()).toBe('y=2&z=3')
+    expect(u.search).toBe('?y=2&z=3')
+    expect(u.href).toBe('http://example.com/?y=2&z=3')
+    // 再次重写:镜像重置为新 query,且继续写穿透
+    u.href = 'http://example.com/?a=1'
+    expect(sp.get('a')).toBe('1')
+    expect(sp.get('y')).toBeNull()
+    sp.append('b', '2')
+    expect(u.search).toBe('?a=1&b=2')
+  })
+
   it('href setter 重新解析并在非法输入时抛 TypeError', () => {
     const u = new URL('http://example.com/')
     u.href = 'https://example.org/path'
@@ -154,6 +180,13 @@ describe('URL(WPT 移植用例,引擎 whatwg-url)', () => {
     const base = new URL('http://example.com/sse/')
     const resolved = new URL('events', base)
     expect(resolved.href).toBe('http://example.com/sse/events')
+  })
+
+  it('lite 域名引擎(默认):ASCII 折叠,非 ASCII 域名解析失败', () => {
+    // 小程序合法域名硬性要求 ICP 备案的 ASCII 域名,lite 默认无语义损失;
+    // 完整 IDNA(punycode)经 ./url/idna 按需安装,见 idna.test.ts
+    expect(new URL('http://EXAMPLE.COM/').hostname).toBe('example.com')
+    expect(() => new URL('http://www.bücher.de/')).toThrowError(TypeError)
   })
 
   it('toJSON 与 toString 一致', () => {

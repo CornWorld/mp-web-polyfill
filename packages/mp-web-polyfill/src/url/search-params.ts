@@ -1,7 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/triple-slash-reference -- ambient 深路径模块声明只能经三斜线引用拉进 program(消费方按 src 编译时也生效)
-/// <reference path="./engine.d.ts" />
-
-import { parseUrlencodedString, serializeUrlencoded } from 'whatwg-url/lib/urlencoded.js'
+import { parseUrlencodedString, serializeUrlencoded } from './engine/urlencoded.js'
 import type { URLRecord } from './engine-types'
 
 import type { URLSearchParamsInit, URLSearchParamsInstance } from './types'
@@ -53,9 +50,14 @@ export class URLSearchParams {
     }
   }
 
-  /** URL 层变更 query 后,重置 list 为最新 query 的解析结果(绑定 seam)。 */
-  resyncFromQuery(query: string | null): void {
-    this.#list = query === null ? [] : parseUrlencodedString(query)
+  /**
+   * URL 层变更后重同步(绑定 seam):重绑到最新 record 并重置 list。
+   * href 重写会替换整个 URLRecord —— 必须重绑,否则 searchParams 的
+   * 写穿透仍落在已废弃的旧 record 上(与 Node 内建行为不一致)。
+   */
+  resyncFromRecord(record: URLRecord): void {
+    this[boundRecord] = record
+    this.#list = record.query === null ? [] : parseUrlencodedString(record.query)
   }
 
   get size(): number {

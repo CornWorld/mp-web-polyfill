@@ -8,7 +8,7 @@ export interface URLRecord {
   username: string
   password: string
   host: string | { host: string; isIPv4?: boolean } | null
-  port: number | string | null
+  port: number | null
   path: string[]
   query: string | null
   fragment: string | null

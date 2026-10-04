@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * 从 web-platform-tests 仓库(pinned commit)拉取官方一致性测试资产:
- *   - url/resources/urltestdata.json → mp-url 全量一致性用例(T3)
+ *   - url/resources/urltestdata.json → url 全量一致性用例(T3)
  * 过滤出 http/https 用例(本仓库的实际暴露面)后落盘,
  * 并写入 pin 元数据,保证 CI 可复现、引擎升级可 diff。
  *
@@ -10,7 +10,7 @@
 import { mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs'
 
 const REPO = 'web-platform-tests/wpt'
-const OUT_DIR = new URL('../packages/mp-url/test/fixtures/', import.meta.url)
+const OUT_DIR = new URL('../packages/mp-web-polyfill/test/url/fixtures/', import.meta.url)
 const PIN_FILE = new URL('wpt-pin.json', OUT_DIR)
 const DATA_FILE = new URL('wpt-urltests.json', OUT_DIR)
 

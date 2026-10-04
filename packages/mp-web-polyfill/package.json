@@ -62,11 +62,10 @@
   "sideEffects": false,
   "dependencies": {
     "eventsource-parser": "^4.1.1",
-    "web-streams-polyfill": "^4.1.0",
-    "whatwg-url": "^14.2.0"
+    "tr46": "^5.1.1",
+    "web-streams-polyfill": "^4.1.0"
   },
   "devDependencies": {
-    "@types/whatwg-url": "^13.0.0",
     "tsup": "^8.5.0"
   },
   "scripts": {

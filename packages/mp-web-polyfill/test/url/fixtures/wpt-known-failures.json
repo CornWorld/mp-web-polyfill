@@ -1,9 +1,11 @@
 [
-  " ← http://a.b.c.xn--pokxncvks",
-  " ← http://10.0.0.xn--pokxncvks",
-  " ← http://a.b.c.XN--pokxncvks",
-  " ← http://a.b.c.Xn--pokxncvks",
-  " ← http://10.0.0.XN--pokxncvks",
-  " ← http://10.0.0.xN--pokxncvks",
-  " ← https://xn--/"
+  " ← http://é@é",
+  "http://other.com/ ← http://GOO​⁠﻿goo.com",
+  "http://other.com/ ← http://www.foo。bar.com",
+  "http://other.com/ ← http://Ｇｏ.com",
+  "http://other.com/ ← http://你好你好",
+  " ← https://faß.ExAmPlE/",
+  "http://other.com/ ← http://０Ｘｃ０．０２５０．０１",
+  " ← https://%e2%98%83",
+  " ← https://a%C2%ADb/"
 ]
