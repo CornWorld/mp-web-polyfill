@@ -20,7 +20,7 @@
     "sync:wpt": "node scripts/sync-wpt.mjs",
     "changeset": "changeset",
     "changeset:version": "changeset version",
-    "changeset:publish": "changeset publish --provenance",
+    "changeset:publish": "changeset publish",
     "pack:all": "pnpm -r --filter './packages/*' exec npm pack"
   },
   "devDependencies": {
