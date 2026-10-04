@@ -8,7 +8,11 @@ import { localStorage } from '../storage'
 
 export const POLYFILL_MARKER = Symbol.for('cornworld.mp-polyfill')
 
-const POLYFILL_META = { pkg: 'mp-web-polyfill', version: '0.1.0' }
+// 版本取自构建期注入(tsup define,源码层单测回退 dev 值),避免与包版本脱钩
+const POLYFILL_META = {
+  pkg: 'mp-web-polyfill',
+  version: typeof __PKG_VERSION__ === 'string' ? __PKG_VERSION__ : '0.0.0-dev',
+}
 
 export type RuntimeTarget =
   | 'fetch'
