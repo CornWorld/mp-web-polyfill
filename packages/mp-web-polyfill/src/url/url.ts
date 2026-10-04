@@ -18,14 +18,14 @@ import type { URLSearchParams } from './search-params'
 export { URLSearchParams } from './search-params'
 
 /**
- * WHATWG URL 包装(引擎:whatwg-url 的 url-state-machine 纯状态机,
- * jsdom/Node 同源实现,已 vendor 进本仓库 —— src/url/engine/,WPT 全量
- * 语料门禁守护;域名转 ASCII 经可注入缝:默认 lite 引擎(仅 ASCII,
- * 小程序合法域名硬约束),完整 IDNA 经 ./url/idna 按需安装)。
+ * WHATWG URL 包装。引擎用 whatwg-url 的 url-state-machine 纯状态机,
+ * jsdom/Node 同源实现,已 vendor 进本仓库(src/url/engine/), 由 WPT 全量
+ * 语料门禁守护。域名转 ASCII 走可注入缝: 默认 lite 引擎(仅 ASCII,
+ * 小程序合法域名硬约束), 完整 IDNA 经 ./url/idna 按需安装。
  *
- * 刻意不走 whatwg-url 主入口的 URL/URLSearchParams 包装类:那一层由
- * webidl2js 在运行时生成(需要 eval),小程序逻辑层没有 eval;且经消费方
- * 打包器(rolldown/weapp-vite)chunk 化后,初始化失败会被 __commonJSMin
+ * 刻意不走 whatwg-url 主入口的 URL/URLSearchParams 包装类。那一层由
+ * webidl2js 在运行时生成(需要 eval), 小程序逻辑层没有 eval。且经消费方
+ * 打包器(rolldown/weapp-vite)chunk 化后, 初始化失败会被 __commonJSMin
  * 缓存成永久性不完整 exports。状态机 + urlencoded 纯函数无此问题。
  * 行为镜像 whatwg-url 自带 URLImpl(WPT 同源语义)。
  */

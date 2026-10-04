@@ -10,11 +10,11 @@ export type { MPRequestInit, MPRequestInfo, MPBodyInit } from './request'
 export type { MPResponseInit } from './response'
 
 /**
- * WHATWG fetch 桥:输入输出语义对齐 fetch 规范,底层单次 wx.request。
- * - 非 chunked:headers 到达即记录,success 后以全量字节 resolve
- * - enableChunked:有 ReadableStream 实现时 headers 到达即 resolve(流式 body);
+ * WHATWG fetch 桥, 输入输出语义对齐 fetch 规范, 底层单次 wx.request。
+ * - 非 chunked: headers 到达即记录, success 后以全量字节 resolve
+ * - enableChunked: 有 ReadableStream 实现时 headers 到达即 resolve(流式 body),
  *   否则退化为缓冲模式(success 后 resolve)
- * - 小程序无 CORS 概念,redirect 由 wx 自动跟随(redirected 恒为 false)
+ * - 小程序无 CORS 概念, redirect 由 wx 自动跟随(redirected 恒为 false)
  */
 export function fetch(input: MPRequestInfo, init: MPRequestInit = {}): Promise<Response> {
   const wx = getWx()

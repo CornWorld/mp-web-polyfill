@@ -28,7 +28,7 @@ export abstract class BodyBase {
   }
 
   /**
-   * 流式响应返回 ReadableStream;缓冲模式返回 null
+   * 流式响应返回 ReadableStream, 缓冲模式返回 null
    * (与规范的偏差:缓冲 body 不再包一层流,text/arrayBuffer 仍可消费)。
    */
   get body(): unknown {

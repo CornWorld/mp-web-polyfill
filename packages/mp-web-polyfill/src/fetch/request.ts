@@ -66,7 +66,7 @@ export class Request extends BodyBase {
     }
     if (serialized?.contentType !== undefined) {
       const existing = this.headers.get('content-type')
-      // multipart 的 boundary 必须与序列化字节一致 → 即使已有(可能为空)也覆盖;
+      // multipart 的 boundary 必须与序列化字节一致 → 即使已有(可能为空)也覆盖,
       // 其余类型仅在缺失或为空时补默认值
       const shouldSet =
         existing === null ||

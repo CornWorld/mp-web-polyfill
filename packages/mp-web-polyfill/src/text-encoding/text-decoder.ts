@@ -12,7 +12,7 @@ interface TextDecoderOptions {
 /**
  * WHATWG Encoding 规范的 UTF-8 解码器(增量状态机)。
  * 与平台原生实现一致:fatal 时对非法字节抛 TypeError,
- * 非 fatal 时按“最长合法子串”规则替换为 U+FFFD;默认剥离开头 BOM。
+ * 非 fatal 时按“最长合法子串”规则替换为 U+FFFD, 默认剥离开头 BOM。
  */
 export class TextDecoder {
   readonly encoding = 'utf-8'

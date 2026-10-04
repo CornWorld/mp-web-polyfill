@@ -11,7 +11,7 @@ export interface BlobOptions {
 
 /**
  * 内存版 Blob(小程序无二进制宿主对象)。
- * 只支持内存字节;真实文件上传应走 wx.uploadFile 适配层。
+ * 只支持内存字节, 真实文件上传应走 wx.uploadFile 适配层。
  */
 export class Blob {
   #bytes: Uint8Array

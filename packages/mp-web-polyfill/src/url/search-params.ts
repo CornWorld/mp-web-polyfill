@@ -4,14 +4,14 @@ import type { URLRecord } from './engine-types'
 import type { URLSearchParamsInit, URLSearchParamsInstance } from './types'
 
 /**
- * URLSearchParams(引擎:whatwg-url 的 urlencoded 纯函数,与 Node 同源)。
+ * URLSearchParams。引擎用 whatwg-url 的 urlencoded 纯函数, 与 Node 同源。
  *
  * whatwg-url 自带的 URLSearchParams 类是 webidl2js 运行时生成的(需要
- * eval),小程序逻辑层没有 eval;改为直接包装 urlencoded parse/serialize
- * 纯函数,行为与其 URLSearchParamsImpl 一致。
+ * eval), 小程序逻辑层没有 eval。这里改为直接包装 urlencoded parse/serialize
+ * 纯函数, 行为与其 URLSearchParamsImpl 一致。
  *
- * 绑定语义:通过 bindURLSearchParams() 与某个 URLRecord 关联后,任何变更
- * 都把序列化结果写回 record.query(write-through),镜像规约的 update steps。
+ * 绑定语义: 通过 bindURLSearchParams() 与某个 URLRecord 关联后, 任何变更
+ * 都把序列化结果写回 record.query(write-through), 镜像规约的 update steps。
  */
 const boundRecord = Symbol('urlRecordBinding')
 
@@ -51,8 +51,8 @@ export class URLSearchParams {
   }
 
   /**
-   * URL 层变更后重同步(绑定 seam):重绑到最新 record 并重置 list。
-   * href 重写会替换整个 URLRecord —— 必须重绑,否则 searchParams 的
+   * URL 层变更后重同步(绑定 seam): 重绑到最新 record 并重置 list。
+   * href 重写会替换整个 URLRecord, 必须重绑, 否则 searchParams 的
    * 写穿透仍落在已废弃的旧 record 上(与 Node 内建行为不一致)。
    */
   resyncFromRecord(record: URLRecord): void {

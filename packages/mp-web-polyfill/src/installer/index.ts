@@ -85,11 +85,11 @@ function markAsOurs(value: unknown): void {
 }
 
 /**
- * 一站式安装器:
- * - 默认只补缺失的 API,宿主原生实现与第三方 polyfill(如 @wevu/web-apis)一律不覆盖;
- * - force: true 时显式接管(replaced 上报);
- * - 本家族重复安装幂等(skipped 上报);
- * - 安装 ReadableStream 后自动接到 fetch 的流式通道。
+ * 一站式安装器。
+ * - 默认只补缺失的 API, 宿主原生实现与第三方 polyfill(如 @wevu/web-apis)一律不覆盖
+ * - force: true 时显式接管(replaced 上报)
+ * - 本家族重复安装幂等(skipped 上报)
+ * - 安装 ReadableStream 后自动接到 fetch 的流式通道
  */
 export function installWebRuntimeGlobals(options: InstallOptions = {}): InstallReport {
   const targets = [...new Set(options.targets ?? (Object.keys(PROVIDERS) as RuntimeTarget[]))]

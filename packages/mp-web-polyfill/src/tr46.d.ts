@@ -1,6 +1,6 @@
 /**
  * tr46 v5(UTS46/IDNA 数据表)无官方类型,这里按消费面做最小声明。
- * 仅被 ./url/idna(全量 IDNA 增强,独立 bundle)引用;默认 lite 引擎不经过它。
+ * 仅被 ./url/idna(全量 IDNA 增强, 独立 bundle)引用, 默认 lite 引擎不经过它。
  */
 declare module 'tr46' {
   export interface ToAsciiOptions {

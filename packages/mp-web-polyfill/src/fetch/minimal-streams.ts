@@ -1,16 +1,16 @@
 /**
- * 最小 ReadableStream:只覆盖本家族的流式消费面 ——
- * 生产端:new RS({ start(c) }) + c.enqueue/close/error(fetch 桥的推送式流);
- * 消费端:getReader().read()(body.text()/json()/手动读循环)。
+ * 最小 ReadableStream, 只覆盖本家族的流式消费面。
+ * 生产端: new RS({ start(c) }) + c.enqueue/close/error(fetch 桥的推送式流)。
+ * 消费端: getReader().read()(body.text()/json()/手动读循环)。
  *
- * 相对 WHATWG Streams 规范的裁剪(显式声明,不做半吊子):
+ * 相对 WHATWG Streams 规范的裁剪显式声明, 不做半吊子。
  * - 无 tee / pipeTo / pipeThrough / BYOB / desiredSize 背压(enqueue 永不阻塞,
- *   与 wx.onChunkReceived 的拉流节奏匹配);不支持 pull 调度与 queuing strategy;
- * - cancel 只关闭流;releaseLock 后挂起的 read 随流落定,不会提前 reject;
- * - enqueue/close 在非 open 状态静默忽略(规范要求抛错 —— 这里是为
- *   wx 回调竞态故意放宽:迟到的 onChunkReceived 不允许炸掉消费方)。
- * 需要完整 Streams 规范时:宿主原生(优先)或 import 'mp-web-polyfill/streams/full'
- * (web-streams-polyfill,独立 bundle,按需携带 ~62KB)。
+ *   与 wx.onChunkReceived 的拉流节奏匹配), 也不支持 pull 调度与 queuing strategy
+ * - cancel 只关闭流。releaseLock 后挂起的 read 随流落定, 不会提前 reject
+ * - enqueue/close 在非 open 状态静默忽略(规范要求抛错, 这里是为
+ *   wx 回调竞态故意放宽, 迟到的 onChunkReceived 不允许炸掉消费方)。
+ * 需要完整 Streams 规范时用宿主原生(优先)或 import 'mp-web-polyfill/streams/full'
+ * (web-streams-polyfill, 独立 bundle, 按需携带 ~62KB)。
  */
 
 export interface MinimalReadableStreamController {

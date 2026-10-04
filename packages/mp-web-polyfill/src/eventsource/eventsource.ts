@@ -17,7 +17,7 @@ export interface EventSourceOptions {
   withCredentials?: boolean
   /** 小程序特有扩展 */
   mp?: {
-    /** 长连接超时(毫秒);真机默认 60s 会被掐断,建议显式调大 */
+    /** 长连接超时(毫秒), 真机默认 60s 会被掐断, 建议显式调大 */
     timeout?: number
     /** 初始重连间隔(毫秒),可被服务端 retry 字段覆盖 */
     reconnectionTime?: number
@@ -43,11 +43,11 @@ function getHeader(headers: Record<string, string>, name: string): string {
 }
 
 /**
- * WHATWG EventSource 客户端:
- * 传输层 = wx.request enableChunked(onChunkReceived → UTF-8 增量解码);
- * 解析层 = eventsource-parser(规范实现);
- * 状态机 = 重连(retry/Last-Event-ID)、MIME 门控、readyState、事件分发。
- * 与规范偏差:无 CORS/凭据语义(小程序无 CORS),重连遵循 retry 且不设次数上限。
+ * WHATWG EventSource 客户端。
+ * 传输层用 wx.request enableChunked(onChunkReceived → UTF-8 增量解码),
+ * 解析层用 eventsource-parser(规范实现),
+ * 状态机负责重连(retry/Last-Event-ID)、MIME 门控、readyState 与事件分发。
+ * 与规范偏差: 无 CORS/凭据语义(小程序无 CORS), 重连遵循 retry 且不设次数上限。
  */
 export class EventSource {
   // 静态常量用 getter 而非静态字段:vite(esbuild) target < es2022 时静态字段会被
@@ -201,9 +201,9 @@ export class EventSource {
     this.#task.onHeadersReceived?.((r) => {
       if (this.#closed || headersOk) return
       headersOk = true
-      // 规范(Fetch get a header + mimesniff):取 Content-Type 按
-      // 大小写不敏感;多值(逗号合并)任一 essence 匹配即通过;
-      // essence = 剥参数 + trim + ASCII 小写,参数(如 charset)忽略
+      // 规范(Fetch get a header + mimesniff): 取 Content-Type 按
+      // 大小写不敏感, 多值(逗号合并)任一 essence 匹配即通过,
+      // essence = 剥参数 + trim + ASCII 小写, 参数(如 charset)忽略
       const essenceList = getHeader(r.header, 'content-type')
         .split(',')
         .map((value) => value.split(';')[0]?.trim().toLowerCase())
