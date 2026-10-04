@@ -1,5 +1,5 @@
 {
-  "name": "cornworld-miniprogram-polyfill",
+  "name": "mp-web-polyfill-root",
   "private": true,
   "version": "0.0.0",
   "type": "module",
