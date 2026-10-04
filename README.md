@@ -188,7 +188,7 @@ pnpm pack:all      # 产出全部 npm tarballs(artifacts 用)
 
 ## Roadmap
 
-- [x] `cornworld-miniprogram-pb-sdk`(同级仓库):PocketBase JS SDK 小程序适配层,已对真实 PocketBase **0.40.4** 跑通 health / JWT 认证 / CRUD / 文件上传下载 / realtime 推送(集成测试 `scripts/ensure-pb.sh`;协议 0.28→0.40 未变,版本策略:服务端跟进最新、不保旧 API 兼容);
+- [x] `pocketbase-weapp`(同级仓库):PocketBase JS SDK 小程序适配层,已对真实 PocketBase **0.40.4** 跑通 health / JWT 认证 / CRUD / 文件上传下载 / realtime 推送(集成测试 `scripts/ensure-pb.sh`;协议 0.28→0.40 未变,版本策略:服务端跟进最新、不保旧 API 兼容);
 - [x] 磁盘文件上传:`wx.uploadFile` 桥在 pb-sdk 的 `uploadFile()` 助手中实现(wx-mock 已同步支持模拟);
 - [ ] mp-* 首次 npm 发布后,把 pb-sdk 的 `link:` 依赖切换为 registry 版本;
 - [x] 业务打桩 mock 桥:`tools/mock/automator-mock.mjs`(按 URL 路由罐头 success/fail + `this.origin` Promise 代理放行 + `--delay`;真机 DevTools 2.06 端到端验证三路全通,调用/返回语义实测记录见文件头注释);
