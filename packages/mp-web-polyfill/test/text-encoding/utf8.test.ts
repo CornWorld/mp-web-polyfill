@@ -44,10 +44,11 @@ describe('TextDecoder / TextEncoder(WPT 移植用例)', () => {
     }
 
     if (c.splits) {
+      const splits = c.splits
       it(`stream decode: ${c.name}`, () => {
         const decoder = new TextDecoder()
         let out = ''
-        for (const part of c.splits) out += decoder.decode(new Uint8Array(part), { stream: true })
+        for (const part of splits) out += decoder.decode(new Uint8Array(part), { stream: true })
         out += decoder.decode()
         expect(out).toBe(c.expected)
       })

@@ -1,0 +1,22 @@
+{
+  "extends": "./packages/tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "allowJs": true,
+    "checkJs": false,
+    "types": ["node"],
+    "baseUrl": ".",
+    "paths": {
+      "@cornworld/wx-mock": ["internal/wx-mock/src/index.ts"]
+    }
+  },
+  "include": [
+    "packages/mp-web-polyfill/test/**/*.ts",
+    "packages/mp-web-polyfill/tsup.config.ts",
+    "packages/mp-web-polyfill/src/**/*.d.ts",
+    "internal/**/*.ts",
+    "tools/mock/*.ts",
+    "tools/mock/*.mjs",
+    "vitest.config.ts"
+  ]
+}

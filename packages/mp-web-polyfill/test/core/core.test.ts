@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { MPAbortError, concatBytes, isMiniProgramRuntime, throwIfAborted } from '../../src/core'
 
-describe('mp-core', () => {
+describe('core(运行时检测 / AbortError / 字节工具)', () => {
   it('concatBytes 拼接多段字节', () => {
     const out = concatBytes([new Uint8Array([1, 2]), new Uint8Array([3]), new Uint8Array([])])
     expect([...out]).toEqual([1, 2, 3])

@@ -58,8 +58,12 @@ describe('automator-mock requestInterceptor(setMock 调用 + 返回值替换语�
   })
 
   it('未命中:返回 Promise,代理 this.origin 的真实 success 结果', async () => {
-    const origin = (o: { success?: (r: unknown) => void }) => {
-      o.success?.({ statusCode: 200, data: '{"real":true}', header: {} })
+    const origin = (o: unknown) => {
+      ;(o as { success?: (r: unknown) => void }).success?.({
+        statusCode: 200,
+        data: '{"real":true}',
+        header: {},
+      })
     }
     const result = callAsSetMockDoes({ url: 'http://other.test/real' }, origin)
     expect(result).toBeInstanceOf(Promise)
@@ -67,8 +71,8 @@ describe('automator-mock requestInterceptor(setMock 调用 + 返回值替换语�
   })
 
   it('未命中且真请求失败:Promise resolve errMsg 形状(代理 fail)', async () => {
-    const origin = (o: { fail?: (e: unknown) => void }) => {
-      o.fail?.({ errMsg: 'request:fail timeout' })
+    const origin = (o: unknown) => {
+      ;(o as { fail?: (e: unknown) => void }).fail?.({ errMsg: 'request:fail timeout' })
     }
     const result = callAsSetMockDoes({ url: 'http://other.test/dead' }, origin)
     await expect(result).resolves.toEqual({ errMsg: 'request:fail timeout' })
