@@ -10,10 +10,10 @@ interface UrlCase {
   expectedSearchParams?: Record<string, string>
 }
 
-// 语料分工:WPT 全量一致性在 wpt-corpus.test.ts(sync-wpt 生成的 483 例 + pin 门禁);
-// 本文件只放上游 urltestdata.json 覆盖不到的语义 —— 上游无 RFC 3986 §5.4 相对解析段
+// 语料分工: WPT 全量一致性在 wpt-corpus.test.ts(sync-wpt 生成的 483 例 + pin 门禁)。
+// 本文件只放上游 urltestdata.json 覆盖不到的语义。上游无 RFC 3986 §5.4 相对解析段
 // (base http://a/b/c/d;p?q)、无显式/空端口保留、无路径 %20 与 %2F 正例、无无 base 抛错正例。
-// 用例格式与 WPT 条目同构(input/base/expected 分量),方便日后并入语料 runner。
+// 用例格式与 WPT 条目同构(input/base/expected 分量), 方便日后并入语料 runner。
 const cases: UrlCase[] = [
   {
     name: 'absolute-http-minimal',
@@ -145,7 +145,7 @@ describe('URL(WPT 移植用例,引擎 whatwg-url)', () => {
     const base = new URL('http://example.com/dir/index.html')
     expect(URL.canParse('page', base)).toBe(true)
     expect(URL.canParse(new URL('http://example.com/'))).toBe(true)
-    // 相对路径按 base 目录解析;绝对路径(/x)替换整个 path,与 Node 内建一致
+    // 相对路径按 base 目录解析, 绝对路径(/x)替换整个 path, 与 Node 内建一致
     expect(URL.parse('page', base)?.href).toBe('http://example.com/dir/page')
     expect(URL.parse('/x', base)?.href).toBe('http://example.com/x')
     expect(URL.parse('http://[:::1]/')).toBeNull()
@@ -183,8 +183,8 @@ describe('URL(WPT 移植用例,引擎 whatwg-url)', () => {
   })
 
   it('lite 域名引擎(默认):ASCII 折叠,非 ASCII 域名解析失败', () => {
-    // 小程序合法域名硬性要求 ICP 备案的 ASCII 域名,lite 默认无语义损失;
-    // 完整 IDNA(punycode)经 ./url/idna 按需安装,见 idna.test.ts
+    // 小程序合法域名硬性要求 ICP 备案的 ASCII 域名, lite 默认无语义损失。
+    // 完整 IDNA(punycode)经 ./url/idna 按需安装, 见 idna.test.ts
     expect(new URL('http://EXAMPLE.COM/').hostname).toBe('example.com')
     expect(() => new URL('http://www.bücher.de/')).toThrowError(TypeError)
   })

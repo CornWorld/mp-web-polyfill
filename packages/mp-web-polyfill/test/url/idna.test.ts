@@ -6,7 +6,7 @@ import { URL } from '../../src/url'
 
 /**
  * ./url/idna:全量 IDNA 域名引擎(UTS46/tr46,独立 bundle,import 即安装)。
- * 默认 lite 引擎对非 ASCII 域名判失败(小程序合法域名为 ASCII);本文件
+ * 默认 lite 引擎对非 ASCII 域名判失败(小程序合法域名为 ASCII), 本文件
  * 在安装全量引擎后,用 WPT 语料的非 ASCII 用例验证行为恢复与上游一致。
  * 本文件与 wpt-corpus.test.ts 隔离运行(vitest 按文件隔离),不影响其他
  * 测试文件的 lite 默认语义。
@@ -22,10 +22,10 @@ interface WptUrlCase {
 const caseKey = (c: WptUrlCase) => `${c.base ?? ''} ← ${c.input}`
 
 /**
- * tr46 引擎级已知偏差(7 条,与上游 whatwg-url@14.2.0 完全一致):
- * WPT 已放宽 invalid-punycode 主机的校验(期望原样通过),tr46 的
- * UTS46 处理仍判失败 —— lite 引擎恰好因 ASCII 直通而通过这些用例,
- * 全量 IDNA 反而暴露差异。该集合与引擎升级无关,属上游行为。
+ * tr46 引擎级已知偏差(7 条, 与上游 whatwg-url@14.2.0 完全一致)。
+ * WPT 已放宽 invalid-punycode 主机的校验(期望原样通过), tr46 的
+ * UTS46 处理仍判失败。lite 引擎恰好因 ASCII 直通而通过这些用例,
+ * 全量 IDNA 反而暴露差异。该集合与引擎升级无关, 属上游行为。
  */
 const TR46_ENGINE_DEVIATIONS = [
   ' ← http://a.b.c.xn--pokxncvks',

@@ -17,7 +17,7 @@ import type { MinimalReadableStreamController } from '../../src/fetch/minimal-st
 
 const pkgRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../../')
 
-// —— 单元:流语义 ——
+// 单元: 流语义
 
 function textOf(stream: MinimalReadableStream): Promise<string> {
   const reader = stream.getReader()
@@ -117,7 +117,7 @@ describe('MinimalReadableStream(默认流引擎,T4)', () => {
     await expect(pending).resolves.toEqual({ done: true })
   })
 
-  // —— dist 层:默认安装的是最小流,主 bundle 不带 web-streams ——
+  // dist 层: 默认安装的是最小流, 主 bundle 不带 web-streams
 
   it('dist:installer 安装的 ReadableStream 是最小实现', async () => {
     const mod = (await import(pathToFileURL(resolve(pkgRoot, './dist/index.js')).href)) as Record<
@@ -136,7 +136,7 @@ describe('MinimalReadableStream(默认流引擎,T4)', () => {
   })
 })
 
-// —— E2E:fetch 流式走最小引擎(wx-mock) ——
+// E2E: fetch 流式走最小引擎(wx-mock)
 
 let mock: WxMock
 

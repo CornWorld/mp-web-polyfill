@@ -31,7 +31,7 @@ async function waitFor(cond: () => boolean, timeout = 2000): Promise<void> {
   }
 }
 
-// ———— T2:外部引擎 eventsource-parser 的契约面(WPT format-* 移植) ————
+// T2: 外部引擎 eventsource-parser 的契约面(WPT format-* 移植)
 describe('SSE 线格式解析(WPT format-* 移植,引擎 eventsource-parser)', () => {
   for (const c of cases) {
     it(`format: ${c.name}`, () => {
@@ -55,7 +55,7 @@ describe('SSE 线格式解析(WPT format-* 移植,引擎 eventsource-parser)', (
       })
       const chunks = Array.isArray(c.stream) ? c.stream : [c.stream]
       // 整链:字节级切片 → TextDecoder(stream) 增量解码 → parser
-      // (切片强制覆盖跨 chunk 多字节断字;最终 flush 保证尾部完整)
+      // (切片强制覆盖跨 chunk 多字节断字, 最终 flush 保证尾部完整)
       const encoder = new TextEncoder()
       const decoder = new TextDecoder()
       for (const chunk of chunks) {
@@ -66,7 +66,7 @@ describe('SSE 线格式解析(WPT format-* 移植,引擎 eventsource-parser)', (
       }
       parser.feed(decoder.decode())
       if (c.deviation === 'engine-emits-empty-data') {
-        // 引擎偏差:空 data 也派发;客户端层(#dispatchMessage 守卫)再对齐规范
+        // 引擎偏差: 空 data 也派发, 客户端层(#dispatchMessage 守卫)再对齐规范
         expect(events.map((e) => e.data)).toEqual([''])
         return
       }
@@ -77,7 +77,7 @@ describe('SSE 线格式解析(WPT format-* 移植,引擎 eventsource-parser)', (
   }
 })
 
-// ———— B 层:客户端状态机(wx-mock E2E) ————
+// B 层: 客户端状态机(wx-mock E2E)
 let mock: WxMock
 
 beforeEach(async () => {

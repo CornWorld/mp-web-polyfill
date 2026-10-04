@@ -15,7 +15,7 @@ import {
   isStreamingSupported,
 } from '../../src/fetch'
 
-// ———— T1 冒烟:外部引擎 web-streams-polyfill 的 API 面(防升级破坏) ————
+// T1 冒烟: 外部引擎 web-streams-polyfill 的 API 面(防升级破坏)
 describe('streams 引擎冒烟(web-streams-polyfill)', () => {
   it('ReadableStream 支持注入 + enqueue/close 读取循环', async () => {
     setReadableStreamClass(
@@ -28,7 +28,7 @@ describe('streams 引擎冒烟(web-streams-polyfill)', () => {
   })
 })
 
-// ———— A 层:纯规约逻辑(零 mock) ————
+// A 层: 纯规约逻辑(零 mock)
 describe('Headers', () => {
   it('大小写不敏感 + append 多值合并', () => {
     const h = new Headers()
@@ -130,7 +130,7 @@ describe('Request / Response 语义', () => {
   })
 })
 
-// ———— B 层:wx.request 传输桥协议(wx-mock + 本地 Node http) ————
+// B 层: wx.request 传输桥协议(wx-mock + 本地 Node http)
 let mock: WxMock
 
 beforeEach(async () => {

@@ -5,15 +5,15 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
 /**
- * 公共导入面契约(一线路产物形态):
- * 1. package.json exports 的每个子路径必须可被真实解析(cjs require 成功)
- *    且 import/types/require 三条件指向的产物文件存在 —— 防「映射写错」类
- *    Node 侧测试(走 src 别名)发现不了、只有消费方打包时才爆的破损;
- * 2. 所有子路径解析到同一份 bundle(esm/cjs 皆然)—— 一线路构建的核心保证:
- *    跨出口只有一份类与单例,installer 安装的 Headers 与 ./fetch 导出的
+ * 公共导入面契约(一线路产物形态)。
+ * 1. package.json exports 的每个子路径必须可被真实解析(cjs require 成功),
+ *    且 import/types/require 三条件指向的产物文件存在。这防的是「映射写错」类
+ *    Node 侧测试(走 src 别名)发现不了、只有消费方打包时才爆的破损
+ * 2. 所有子路径解析到同一份 bundle(esm/cjs 皆然), 一线路构建的核心保证:
+ *    跨出口只有一份类与单例, installer 安装的 Headers 与 ./fetch 导出的
  *    Headers 必然同源(CJS 多入口构建曾把共享模块内联成两份副本,
- *    跨入口 instanceof 全断,2026-10-04 修复)。
- * 前置:先 pnpm build(CI 顺序 typecheck→build→test 满足)。
+ *    跨入口 instanceof 全断, 2026-10-04 修复)
+ * 前置: 先 pnpm build(CI 顺序 typecheck→build→test 满足)。
  */
 const pkgRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../')
 const exportsMap = JSON.parse(readFileSync(resolve(pkgRoot, 'package.json'), 'utf8'))
@@ -22,8 +22,8 @@ const req = createRequire(resolve(pkgRoot, 'package.json'))
 
 describe('exports 子路径契约(单 bundle 同源)', () => {
   const subpaths = Object.keys(exportsMap).filter((k) => k !== './package.json' && k !== '.')
-  // 一线路的例外:./url/idna(tr46 数据表 ~213KB)与 ./streams/full
-  // (web-streams ~62KB)是按需增强的独立 bundle —— 必须与主模块图隔离,
+  // 一线路的例外: ./url/idna(tr46 数据表 ~213KB)与 ./streams/full
+  // (web-streams ~62KB)是按需增强的独立 bundle, 必须与主模块图隔离,
   // 否则所有子路径消费方都会被迫携带。
   const SECONDARY_BUNDLES: Record<string, { import: string; require: string }> = {
     './url/idna': { import: './dist/idna.js', require: './dist/idna.cjs' },

@@ -3,15 +3,15 @@ import { fileURLToPath, URL as NodeURL } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { URL } from '../../src/url'
 
-// ———— T3:whatwg-url 全量一致性(urltestdata.json,数据驱动) ————
-// 资产来源:WPT 官方(pinned commit 见 wpt-pin.json),`pnpm sync:wpt` 刷新。
+// T3: whatwg-url 全量一致性(urltestdata.json, 数据驱动)
+// 资产来源: WPT 官方(pinned commit 见 wpt-pin.json), `pnpm sync:wpt` 刷新。
 // 门禁语义:
-//   - 基线内的已知偏差 → skip(不红);
-//   - 基线外的新偏差 → 红(引擎升级回归);
-//   - 基线条目重新通过(或语料中已不存在)→ 红(偏差消失,请刷新基线)
-//     —— 基线用例被 skip,不会作为 it 运行,由升级回归门在收集阶段
-//     直接重放求值,保证该分支真实生效;
-//   - 刷新基线:UPDATE_URL_BASELINE=1 pnpm vitest run test/url/wpt-corpus.test.ts
+//   - 基线内的已知偏差 → skip(不红)
+//   - 基线外的新偏差 → 红(引擎升级回归)
+//   - 基线条目重新通过(或语料中已不存在)→ 红(偏差消失, 请刷新基线)。
+//     基线用例被 skip, 不会作为 it 运行, 由升级回归门在收集阶段
+//     直接重放求值, 保证该分支真实生效
+//   - 刷新基线: UPDATE_URL_BASELINE=1 pnpm vitest run test/url/wpt-corpus.test.ts
 
 const DATA_FILE = fileURLToPath(new NodeURL('./fixtures/wpt-urltests.json', import.meta.url))
 const BASELINE_FILE = fileURLToPath(
@@ -92,8 +92,8 @@ if (!existsSync(DATA_FILE)) {
         return
       }
       const newDeviations = failingKeys.filter((key) => !baseline.includes(key))
-      // 基线条目不作为 it 运行(skip),这里直接重放:仍失败 = 偏差健在;
-      // 现在通过或语料里已找不到 = 偏差消失,基线该刷新了
+      // 基线条目不作为 it 运行(skip), 这里直接重放: 仍失败 = 偏差健在,
+      // 现在通过或语料里已找不到 = 偏差消失, 基线该刷新了
       const stale = baseline.filter((key) => {
         const c = byKey.get(key)
         return c === undefined || evaluate(c).ok
