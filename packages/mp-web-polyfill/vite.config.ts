@@ -27,7 +27,7 @@ const entries = {
   'streams-full': 'src/fetch/streams-full.ts',
 } as const
 
-const banners: Record<string, string | undefined> = {
+const banners: Partial<Record<keyof typeof entries, string>> = {
   idna: '// mp-web-polyfill/url/idna —— 全量 IDNA 域名引擎(UTS46/tr46),import 即安装;默认 lite 引擎见 ./url',
   'streams-full':
     '// mp-web-polyfill/streams/full —— 完整 WHATWG Streams 引擎(web-streams-polyfill),import 即注入;默认最小实现见 ./fetch',
@@ -47,9 +47,10 @@ export default defineConfig(({ mode }) => {
         fileName: (format) => (format === 'es' ? `${key}.js` : `${key}.cjs`),
       },
       rollupOptions: {
-        external: Object.keys(pkg.dependencies).map((d) => new RegExp(`^${d}(\\/|$)`)),
+        // 字符串形式下 rollup 自带「裸名 + 子路径」匹配, 不漏 web-streams-polyfill/es2018 之类
+        external: Object.keys(pkg.dependencies),
         output: {
-          banner: banners[mode],
+          banner: banners[key],
         },
       },
     },
