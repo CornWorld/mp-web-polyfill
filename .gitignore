@@ -4,3 +4,6 @@ dist/
 .DS_Store
 coverage/
 .zcodeignore
+
+# ocr-review 输出与会话状态
+refs/
